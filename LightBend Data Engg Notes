@@ -1,0 +1,143 @@
+Lightbend Data Engineering Principles:
+============================================
+Serialization :
+-----------------------
+Serialize   : Object to Bytes
+DeSerialize : Bytes  to Object
+
+Each Data Structure needs a way or algorithm to serialize them
+Think of Tree being serialized into an Array using Depth First Search or Breath First Search
+
+Serial and parallel Communication.
+
+
+Cache:
+-----------------------
+CPU(Register) <= RAM <= Disk
+CPU pulls the data RAM and puts that into its register and does calculations
+So Pulling data from disk then to RAM and then to CPU is expensive.
+So use cache, a region close to CPU . If the data is no in cache then CPU goes and check the RAM for the data. This is called ""Cache Miss"".
+Always think of using array for serializing data. Where data are stored in contiguos area within a data block.
+
+
+Data Block : 64Bytes
+
+A binary tree cab be represented in the form of Objects as well as Array form (this is efficient)
+
+
+
+Language Support :
+----------------------
+The serialization of objevct within a language is supported by its librbabry. eg Serialzable interface  in java.
+e.g : Array with Object reference are flattended and then serialized to disk or file by these libraries.
+
+Java Serialization is dangerous : Gives un predicatable result
+
+Java Serialization is used heavily in Spark Streaming for checkpointing.
+
+But in the bew structured streaming we have diff serializer which gurantees zero data loss whne reading old checkpointed data.
+
+Java serialization has securioty issue thatg someone can malaciously encode into the deserialized data.
+
+Avoid using language specific serializer. Useful for MicroService architecture. One language cannot read data serilaized via naother language. Inefficicnet.
+
+Try using ""KRYO"" serializer. Flexible.
+
+Better than Java serilaizer. 
+
+
+
+Schema:
+----------------------------
+DB Schema and Data Format Schema
+
+
+
+Self Describing:
+-----------------------------
+Json : Explain what is the structure of the data
+e.g json, Amazon Ion , CBOR
+We dont need a seperate sechema management for the maintanance of the metadata
+U can generate schema on runtime on fly.
+It simply decouples the evolution of the software from the maintance of the schema.
+
+
+
+
+Schema Maintanance:
+--------------------------------
+Think of Front team adding a new column to the data. So must the backend team must convey this change to their backend system.
+This incurrs operation cost. Think of adding a new column to the existing DB tables.
+So the schema change is not highly encouraged in any organization.
+
+Self Describing Data like Json is highly prefered for "Dynamic Language": Where the type of the data is actually infered from Data itself. It is not strictly defined anywhere.
+Schema Defined Data : Like Avro schema or DB is prefered by Strongly Typed Language(Checks the type at compile time). like Scala or Java. But is incurrs some co ordination cost.
+
+Self Decribing Data : Fewer Co-ordination Cost , Flexible (Handles all all types) No data type constraint, 
+
+
+Schema Defined Data : High Co-ordination cost ,  
+
+Self Describing data mitigate on the upfront cost of settling on the schema between reader and writer. But not type safe.
+
+Data Sceinece prject mainly involve activities of adding new column or changing the existing schema on fly . Requiring an explicit schema can limit these capabilities.
+
+
+
+
+Column Oriented and Row Oriented Data Formats:
+-------------------------------------------------- 
+Chossing either of them depends on the kind of workloads.
+Transactional : Row Format
+Analytical Workloads : COlumnar format
+
+Row Oriented: No Column based compression.
+Columnar rep : Can compress data. OLAP. 
+
+***File skipping : Can be helpful in ignoring the specific file base don column level computation. like based on max min value of the amount column we can ignore that file if the amount is not within that range.
+Lesser IO using columnar format
+Cons : Expensive to put all data in columnar format at write or ingestion time.  Not beneficial if all columns to be accessed for an operation.
+
+***Conversion of row based to column based one of a record is the usualy pipeline.
+Check out how it is done.
+
+
+Unstructured Data:
+--------------------------------------------------------
+Would conusme lot of space
+
+Music , Movies(Rich Data Types) , IOT data, Text files, etc
+Pros : Unstructred makes its flexible and unhinderred by Schema. Can apply lossy compression.
+Cons : Difficult to analyze. Storage costs.
+
+Deep Learning: Technology whihc enabled the anaysis of unstructred data
+
+
+Schema Evolution:
+------------------------------------------------------------
+Scehma : BluePrint of the data 
+Schema on Read : Slow while reading : Chamges occur only in schema. Not in the actual data. Flexible for large scale data.
+Schema on Write : Slow writing of data
+
+Schema Evolution : Change to Schema is not introduce any disruption in the data : Thats the Goal.
+
+Forward Compatible  : Old Schema is compatible with the new data.
+Backward Compatible : New Schema can be used to read the old data.
+
+Tips: USe dafaults, Avoid deletion of fields, Avoid changing field types.
+****Changingnging field types would need toolings around how to alter the types of the existing fields to be read by the new schema.
+** Changeing Uid From "Int" to "String" : Check this can be implemented. We will have to rewrite most of the data to make it compatible.
+It needs a step within CI to change the fields to the new type before being read by the new or updated schema
+
+
+****The compatibility of the schema change must be checked via """Breaking Change Detector""". 
+Put all schemas in one place have it analysed to detect any change to the schema would break the 
+
+The Schema resolution is checked via compaby policy
+
+****Proactive Desining knowledge of data systems with the future changes in mind is crtitical.
+** Check how it is dones within our project.
+
+
+
+
