@@ -139,5 +139,165 @@ The Schema resolution is checked via compaby policy
 ** Check how it is dones within our project.
 
 
+Types of Evolution:
+---------------------------
+Avro and Protocol buffer
+
+****Challenges in Column Oriented and Row Oreinted(With regards to Schema evolution)
+
+Column Oriented : ORC and Parquet (Bit complex for Schema evolution)
+Row Oriented : Avro and Protocol Buffer (Good for Schema evolution)
+
+Protocol  Buffer : Found by Google for Schema Evoltuion
+Use Tag Evolution Strategy : Eacg field is assigned with a <Tag> Number
+Has schemas in the name of "message" with Tag number for each field and with relevant types.
+Cannot reassign a filed with diff tag number
 
 
+Avro : has """"Schema resoltuon rules"""". Not supported by many languages as Protocol buffer.
+Purely relies on Originla Schema and New Schema with consistent name
+Json based Schema File.
+Goal is to make the reader and writer schema match.
+Downside : No Optional Field. But we use Union type instead.
+Constraints : Remove field only with default valies. Add field with default values. U can reorder fields.
+              Chaging name of the field would require change in all reader schema.
+
+
+Human readability:
+--------------------------- 
+Factors to choose the dataformats :
+1. Flexibility
+2. Insights
+3. Usage
+4. Readability
+
+CSV : NO schema. For Data Table import. Comma supported
+
+JSON : Web REST API , No types, Useful for COnfig use case.eg cannot represent types like Date field.
+
+YAML : Dev ops and COnfg files for Ansible and Kubernetess. Useful for COnfig use case
+
+HOCON : Superset of YAML and JSON. Used fo config for scala project like akk in lightbend.
+
+TOML : Toms Obvious Markup Language
+Used specific for RUST language.
+
+Cross language support is available.
+
+***Check for factors to be considered to choose a dataformat.
+
+Human readable format Drawbacks:
+------------------------------------
+1. Binding to local Data Structure can be mismatched. Represetning date field in Json is not that easy
+2. Missing type info : Type info can be erased easily. MOst of the formats do not have type info.
+3. Space Efficiency : Consume huge space since stored in non-binary format. But Java serializable could take more spaec than Human readable format
+4. Securtiy
+
+
+Compression :
+--------------------------
+Compression ratio = ( Original file size / Compressed file size ) 2x, 3x, 4x
+Space vs CPU time in reading compressed file. This is the trade off.
+
+Compressed data in Cold storage.
+Think of Speed of read while reading compressed file.
+
+Column based Data Formats : Good for compression. File size is lesser after compression.
+Row based data format : File size is comparatively bigger after compression.
+
+***Pros of Compression : Storage cost reduction , Minimize resources for storing , More effective CPU cache usuage whihc results in high throughput.
+
+***Cons of Compression : CPU time in decompressing.
+
+Lossless => No data is lost. Only redundant statistical data is lost (bigger size)
+Lossy Compression => Losses some info . UNused or less importtant data. (lesser size)
+
+Run Length Encoding (RLE) : AAAABBBCC => A4B3C2
+Data of similar value occuring consecutively
+
+DELTA ENCODING : 601 624 613 => 601 23 -11
+If the data  of similar types are centralize around a vlaue then we can do this type of compression.
+
+Dictionary encoding : Where we may a string value to an integer value or anything lesser in byte size. So HELSON => can be mapped to a value like 1 
+So we store 1 instead of helson in the compressed column and do a look up while evaluatiing it.
+Cardinality : But it purely depends on the cardinality of the data stored in that column.
+
+COmpression Techniques:
+---------------------------
+***Always try to read and understand the distribution of ur data beofre goinf for compression.
+It not only depends upon the data type.
+
+
+Factors to decide the compression:
+-----------------------------------
+1.*** SORTED / REPEATED / LOW CARDINALITY
+understand the distribution of patterns in your data.
+
+General Purpose compression techniques:
+---------------------------------------------
+It does not need u to understand the distribution of your data.
+
+GZip :
+========
+.gz or .tar.gz
+Has decent compression ratio.
+But cannot decompress in parallel using multiple CPU.
+Decent general purpose.
+
+
+Bzip2:
+==============
+.bz2
+More CPU intensive. Better that gzip in compression ratio.
+Can be decompressed in parallel.
+Useful for bigdata.
+Lesser : Space.
+
+
+Snappy : 
+============
+.snappy
+Very Modern. Devloped by google.
+Compression ratio is not as good as gzip or bzip2
+But fast at decompression.
+Redcue the CPU usuage.
+Lesser : Time
+
+Zstd :
+============
+.zstd
+Developed by Facebook.
+Close to optimum at Compression Ratio and Better Decompression speed.
+So good savign at both Time  + Space.
+But not widely supportd by any other language.
+
+
+Memory Mapping:
+=============================
+Reduce the serialization cost minimum.
+
+2 Techniques:
+------------------
+*******OFFSET TECHNIQUE************
+1. Using Bespoke Data STructure to represent the data : Like We used array to represent a Binary Tree.
+***Programm processing tiume is owften dominated by the serlization and deserializaton time.
+This hugely reduces the serilazation and Deserialization time
+
+***mmap() : Allows the file on disk to be mapped directly to memory.So 2 pgms in diff process can share the same copy of the data in memory.
+****Check how memory mapping works
+Can be used only in the hardware with MMU (Memory Management Unit)
+
+mmap : Reduced RAM usuage since we dont need to laod the entire file into the memory. Instead we map only the art what we need into the memory address space.
+Results in greater IO.
+
+
+SerDe Free Types:
+-----------------------
+***Apache Arrow : Memory of spark app can be shared with Python program
+***Flatbuffers.
+***Simple Binary Encoding : Used in High frq trading platform
+
+
+
+
+ 
