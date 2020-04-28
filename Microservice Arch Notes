@@ -71,7 +71,7 @@ So always prefer synchronous pattern (like RPC)
 
 Sometimes we have Custom or Domain specific protocol like FTP , SFTP.
 
-
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Service Registry :
 ==================
 It is simply a DB or any other Data store whihc ocntains the info of the servcie like it s instance details and the network end.
@@ -86,7 +86,7 @@ Service Discovery:
 
 Tools like : Apache zookeper (widely used for service co-ordination and as service registry ) , Netflix Eureka , Consul.io
 
-
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Databases:
 ========================
 Major issue in MS design is how to let the services to access the data stores and share data between them.
@@ -101,6 +101,8 @@ Seperate DB for each resource. But we would need data from datastores of another
 ================================
 One API Composer sends request to another 2 services to get the wdata from them and join them. But this has certain issue like tramsmitting huge data across network to the API Composer.
 ***We usually go for this pattern when the volume of the data to be joined is lesser. (Think of the Orders to be joined with the a list of warehouse which is small in size)
+
+
 
 ****Event Sourcing Pattern:
 =============================
@@ -175,5 +177,9 @@ Each service can check for the health of a service via this API.
 
 GUID : Global UID : Like Service Request ID for Logging and tracing the log.
 
+***Check for the log aggregation technology available in the market
 
+This is need to analyse the log of diff microservices in diff servers.
+e,g Elastic search , Kibanaa, Splunk , Logstash,etc.
+See how they do this.
 
