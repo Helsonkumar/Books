@@ -1,0 +1,179 @@
+Microservices Architecture Patterns and Techniques : Udemy
+==================================================================
+Services are  :
+Fine grained and Light weight
+
+Adv : M/S 
+============
+Lossely copuled.
+Improves modularity
+Scalable
+Promotes parallel devlopement
+
+Drawback of M/S:
+====================
+Infra cost is high
+Integration testing of servcies is complex
+Beaware of nano-service anti patterm (where a service is too fine grained> The serialization between services outweighs its utility)
+
+A UI project is not an ideal candidate for M/S pattern since it requires lot of data exchange between servcies.
+
+When to use microservice pattern:
+-------------------------------------
+1. When the project is of long term since m/s based system wold take long time to design and test the integration of the small service.So consider the duration of your project.
+2. If the project need is quick then do not go for M/S based pattern.
+3. Go if the project is too complex.
+
+
+
+Why M/S project fails:
+--------------------------------------
+lack of exp in managing M/S based project is one of the reasons.
+
+Prevent by:
+-----------------
+1. Detremine the applicabiltiy
+2. Prioratise automation (CI/ CD)
+3. M/S templates.
+
+M/S template:
+---------------------
+M/S project set up has similarities for each project.
+To reduce the set up time use templates.
+
+Project code repo set up :
+---------------------------------
+Mono repo :
+==============
+Pros: Only one input and output contracts in sync
+Cons: Diff teams working with the same repo can break the build.
+      Long build times
+	
+Discrete Repo:
+================
+Pros: Diff team owns diff repo
+      Scope of single repo is more clear
+Cons: Contract versioning is clear 
+      More cost in project set up 
+	  
+Mono repo is mostly preferred.
+
+M/S decomposition:
+=========================
+1. Based on the """"Business capabilities"""" we divide the monolithic app into Microservce based one.
+
+
+Inter Service Comm: How diff service interact with each other
+=================================================================
+1. Can be Synchronous : via RPC with request and response pattern
+2. Can be Asynchronous: via dropping message in the message queue. But it adds additonal overhead.
+So always prefer synchronous pattern (like RPC)
+
+Sometimes we have Custom or Domain specific protocol like FTP , SFTP.
+
+
+Service Registry :
+==================
+It is simply a DB or any other Data store whihc ocntains the info of the servcie like it s instance details and the network end.
+Each service registers itself to this Registyr on start up and rmeoveitself on shutdown
+A registry checks the ehart beat of each service at regular interval.
+
+Service Discovery:
+=======================
+***Client side discovery:  Client checks the service registry directly. Service registry inturn returns the approproate instance location based its load.
+***Server side discovery : Client sends request to load balancer => Load balancer send request to Service registry to pick the available instance .
+                        But extra network hops and we can inbuilt the service registry within the load balancer to reduce the netwrok hops
+
+Tools like : Apache zookeper (widely used for service co-ordination and as service registry ) , Netflix Eureka , Consul.io
+
+
+Databases:
+========================
+Major issue in MS design is how to let the services to access the data stores and share data between them.
+
+Shared DB (Performance issue : Multiple query from multiple service accessing the same Db.Think of long running queries by a service may halt another service query)
+
+or
+
+Seperate DB for each resource. But we would need data from datastores of another services. We woud use [["""API compsition""" + """Event Sourcing"""]] for this.
+
+*****API Composition Pattern:
+================================
+One API Composer sends request to another 2 services to get the wdata from them and join them. But this has certain issue like tramsmitting huge data across network to the API Composer.
+***We usually go for this pattern when the volume of the data to be joined is lesser. (Think of the Orders to be joined with the a list of warehouse which is small in size)
+
+****Event Sourcing Pattern:
+=============================
+Here instead of querying 2 Db owing 2 diff service and joining the data sent across the network , the composer stays updated with the current state of the data stores of those 2 service
+by subscribing to the event store into which those 2 diff services publishes their state change.
+So the composer or whoever subscribed to that state change data get the latest state of the object they needed.
+They can replay the event from the recently taken snapshot.
+this pattern is gaining popularity.
+**** We go for this pattern when data from more than one service to be joined is bigger in size.
+
+
+*** Get familiar with event sourcing first.
+
+
+Two Phase Commit pattern:
+===========================
+Basically meant for distributed transaction scenario where the data must be commited by all involved services in a transaction.
+Co -Ordinator: Transction co ordination across the services is done by the co-ordinator service.
+
+Lets us say we have 3 servcies : like Payement servcie , Order placement , Product service.
+Here all the services must behave cohesively.
+ 
+Phase-1 Commit : Co-ordinator sends a query asking for the status of the txn from each services. The services respond back with YES/No based on the sucess or failure of the services processing.
+
+Phase 2 Commit : If all the services respond with YES, then the co-ordinator sends a message to each service to commit their state changes.
+                 After commiting each service acknowledge the co-ordinator.
+				 If any of the service fails to acknowledge then the co-ordinator sends the rollback message to rool abck their state change.
+				 
+This is how the distributed transaction is handled.
+
+
+
+Saga: Alternative to Two Phase commit pattern:
+==================================================
+Choreography Saga Pattern : Each service drops a message in the """message broker""" to signify the success of failure of the corresponding request.
+                            Here the roll back is done by triggering the """Compensation Transactions""" so it will reevert back the changes done by 
+   
+   
+Orchestration Saga Pattern : Here no message broker is involved. INstead each message is co-ordinated by a Central Co-ordinator.
+                             If any of the processing is failed by any service, the coordinator sends a roll back message to other service.  
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Failover mechanism :
+=========================
+High Availability of the resources. Like Services , Service registry
+***In MS arch the hradware failure is less likely to occur.
+We make HA of the service via replication.
+
+Circuit breaker pattern:
+====================================
+Sometimes when a service send a request ot another service, that service provider might be down for some reason. 
+Due to which the sender would keep sending the requst to that service and the request would be piled up and it ultimately result in the resource contention and it will not even let the failed service to recover.
+In the worst case this might even have cascading effect on other system resource and finally it might pull down the system.
+
+so the idea is the prevent the resources from gettting contention and help the failed service to recover feasibly.
+
+So we use """Circuit breaker""" as module thru which a service must send request to another services.
+This CB would keep monitoring the number of failed request to a service and if a certain count exceeds it would fail all request to that failed request by itself.
+It helds the request for certain time and if failed service recovers within that time, then every continues as normal.Else that time is reset once again untill the service is recovered.
+So this CB prevent the resource contention like this.
+
+Cb cab ne added as part of service template.
+
+e.q : https://github.com/Netflix/Hystrix  https://github.com/alibaba/Sentinel
+
+Health Check API:
+=======================
+Each service can check for the health of a service via this API.
+
+GUID : Global UID : Like Service Request ID for Logging and tracing the log.
+
+
+
