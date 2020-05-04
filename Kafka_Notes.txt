@@ -1,0 +1,364 @@
+What problem does solves:
+Kafka was originally invented to the problem in Lined to ingest large volume of event data from linked website
+with low latency and with good data delivery guarantees.
+
+Kafka : as a Log Data Structure. Tbis is powerfull for bigData ingestion
+
+But What kafa does not do :  Diff between kafka and the message brokers.
+Kafka message do not have message id. Messages are identified with their offet within thr partitions,
+kakfa does not keeps track of what messages have beeb consumed by the consumer.
+
+Because of the above limitations with conventional Queues : Kafka can have some optimization.
+
+1. There is no index of messages being maintained.
+2. No random acess of data from partiton by the consumer.
+3. There are no deletes.
+4.No  bufefering at user end.
+
+
+Kafka vs RabbitMQ :
+=====================
+Message Broker
+Event Source (Kafka Excels)
+
+Are the main use cases for which these 2 tools can wbe utilized.
+
+Rabbit  MQ : 
+=============
+Brokers keep track of the message consumed by the consumer. It is also distributed.
+Cretaed to implement AMQP protocol of message exchange.
+Not for High volume and real time data wprocessing
+Retains ony unread messages
+In dependent of external servcies
+AMQP or any other protocol driven
+Complex routing logic
+Rabbit MQ can address the use case of Kafka wbut with additinal software
+It needs additonal plugin to act as kafka (like cassandra for message replay,etc)
+Finer grained consistency on per message basis
+Throughput is not that great
+
+
+
+Kafka:
+=========
+Designed for low latency high volume of Event data
+Durable and fast and scalable
+It is a durable log store.
+Kafka does not tracks the message read by the consumers
+Depends on servcies like ZooKeeper
+Solves the messy integration problem
+100k/sec : is the basic reason why people choose kafka
+so the throughput is better.
+
+
+Use case :
+------------ 
+Stream from A to B w/o complex routing.With max throughput delivered in partitoned order AT LEAST ONCE
+When u need the stream  history of data. Data can be replayed unlike Rabbit MQ
+Event Sourcing
+Not suited for certain use cases like request/ reply , p2p messaging layer,etc
+
+
+===============================================================================================================================
+Side notes :
+===============================================================================================================================
+Netflix process around ~500 billion events per day
+Around ~8 Million events per seocond at peak times
+
+Think of materialized view and normal View.
+Materialized view has the resutset cached leading some un updated data , but easy to accesss at the cost of extra storage space in mempry.
+Mat.views are updated only periodically and index canw be  built on any column unlike normal view where index are built onlhy on the orginal columns
+Mat.view is mainly used in D/W technologies.
+
+Think of write intensive and read intensive workloads
+
+SMACK : Spark + Mesos + Akka + Cassandra + Kafka => CQRS (Command Query Responsibility Seperation)
+
+===============================================================================================================================
+
+Kafka CLI Command Samples:
+-----------------------------------------
+zookeeper-server-start C:\Users\DELL\Others\Kafka\config\zookeeper.properties
+kafka-server-start C:\Users\DELL\Others\Kafka\config\server.properties
+
+kafka-topics --create --topic test-topic --zookeeper localhost:2181 --replication-factor 3 --partitions 3
+
+kafka-console-producer --broker-list 127.0.0.1:9092 --topic test
+
+kafka-console-consumer --bootstrap-server localhost:9092 --topic twitter_topic --from-beginning
+
+kafka-consumer-groups --bootstrap-server localhost:9092 --group Consumer-Group-1 --describe
+
+===============================================================================================================================
+
+Elastic Search:
+--------------------------------------------
+
+GET /_cat/indices?v
+
+/helson_twitter/_search : gives all the records in the indices : gives the indices defined 
+
+GET /helson_twitter/tweet/gfgvO3EBmBN2c-s9TOmg : gives the specific record with the key
+
+/helson_twitter/_count?q=is_quote_status: false : runs the given query 
+
+
+/helson_twitter/_delete_by_query?conflicts=proceed   : dletes all records 
+{"query": {
+        "match_all": {}
+      }
+}
+
+
+PUT helson_twitter/_settings             => for changing the settings of the indices
+{
+  "index.mapping.total_fields.limit": 2000
+}
+
+
+{
+  "_index": "helson_twitter",
+  "_type": "tweet",
+  "_id": "gfgvO3EBmBN2c-s9TOmg",
+  "_version": 1,
+  "_seq_no": 213,
+  "_primary_term": 1,
+===============================================================================================================================
+Things to be checked:
+
+1. How to alter a topic for diff partitons after being created.
+2. producer.flush() / close() would flush all the message which the producer holds in its memory.
+3. Think of how producer message delivery failure is handled.
+4. Producer retries
+===============================================================================================================================
+Kafka Tutorial Notes:
+
+1*. ack-0/1/all . ack=all must be used in conjuction with min.insync.replcias 
+By default all the ISR expected to have the data written in their node.
+But ack=all with """min.insync.replcias = n""",  denotes the minimum number of nodes which must have the data replciated in their disk.
+Else the producer.send method will result in expection from the broker. IOn this exception prducer would retry to send the message (this rety is confgurable)
+In the latest version of kafka , producer would retry for """2147483647""" (whihc is ahuge number).
+This is based on """retry.backout.ms = 100ms""" (for every 100 ms producer would retry to send the message until that huge count is reached.)
+But is this also backed by """delivery.timeout.ms = 2 min""" (producer would try resending for 2 min. Aftre that it would stop)
+This is to handle the producer failure in message delievery.
+
+But retrying to send the message might result in messages being sent out of order.
+Because in kafka we can send messages  in paralle via multiple producer instances.
+This is controlled by  : """max.inflight.request.per.connection""" => how many producer requests can be made parallel for a single connection ot the cluster.
+If this parameter is made to "1" then it would impact the throughput.
+So check that one  wisely. 
+
+
+
+2*.Idempotent producer  : A producer message is commited at the broker end only once. Even of the producer retries to send the message foe amultiple times since it had not received ack, the broker would 
+find the producer.rquest.id and checks if this is already commited. So if this is already commited then the broker would not commit the message as duplicate.
+This is called idempotent producer.
+To acheive this  : **** producerProps.put("enable.idempotence", true) ****
+
+
+3*. Kafka Producer Compression :
+Compression.type => snappy / lzip / Gzip4(which is time consuming : so not effective). Results in hig throughput
+Design decision on which codec to choose from. Check out the below blog
+https://blog.cloudflare.com/squeezing-the-firehose/
+
+4*. Producer Batching : 
+Kakfa objective is to reducet eh latency and increase thr throughput of the message delievry.
+max.inflight.request = 5 (means that maximum of 5 producer request can be sent individually at the same time) in parallel
+But whilst these messages are sent in parallel rest of the messages can be batched up together.
+This is decided by 2 configs:
+"""linger.ms""" => (0 by default) that is the time for which the producer must wait before sending the message. This might result in latency in consumer side since the messages are not deliver rite ASAP.
+"""batch.size""" => (16KB  default) size of the message batch. Whne the batch is full before the liner.ms  : producer would send those messgaes.
+This is set per -->partition level<--. So make sure U dont set it to high value. Otherwise we will run OOM.
+
+5*. Prationing algorithms:
+"""murmur2""" algorithm is used for partitoning when the key is given. 
+Else we can write our own partitoning algorithm and inject via the config param  """partitioner.class"""
+
+6*.Advanced config :
+Producer messages are always buffered before sending to broker. This is also the case when the producer rate is faster than the broker's acceptance rate.
+So """buffer.memory""" => (32MB default) would be used.
+But when theis biffere is full or the producer is not able to drop messages to this buffer then the producer.send method will be locked for configured milli seconds.
+"""max.block.ms""" => 60000(60 ms). When this time is elapsed then producer will be down or throw exception.
+
+7*. At-most-Once : Consumer is gona read the messages in batches(need to check this though where we define or set this parm or is that kafka itself handles this way)
+                   So offset is commit as soon as the message is read by the consumer and stired in its buffer. Even though it is not processed.
+				   So when the consumer goes down whilst in the middle of processing the record since the offet is already commit , there might be message losses.
+
+    At-leas-Once : The offset is commit only after the messages are processed . So even if the consumer goes down in the midst of processing, then when it comes back 
+                   it will get to reprocess the same message whihc is already processed. So we need to make our consumer processed """IDEMPOTENT""" 	
+
+    Exactly-Once : Worls for kafka-kafka models. 
+
+
+Conusmer settings:
+-----------------------
+8. """fetch.min.bytes""" (def: 1) => minimum no of bytes to be received form broker in each consumer poll request.
+We can make this large so the broker would send the messages as soon as this limit is reached.
+   """max.poll.records"""(def : 500)  => max no of records to be received in reach consumer poll request.
+   results in high through put
+   """max.partition.fetch.bytes""" (def: 1MB)=> max number of bytes fetched by a consumer per partition per poll request
+   """fetch.max.bytes""" => maximum no of bytes fetched by consumer across multiple partitions. 
+   ***Check how the consumer fetches data from multiple partitions in parallel.
+
+
+9. Consumer offset commit strategy :
+---------------------------------------
+HOw the consumer commits the offsets when the message is consumed
+"""enable.auto.commit = true""" (offsets are auto commited. Synchronous processing of batches.ie no new batches would be polled(fetched) untill we procesess the current one)
+
+So u poll the record into record batches and do something Synchronous.So no new batches would be polled unlsess we process the existing batch.
+Here U let the consumers to commit the offsets (for all whatever has been done so far) for U every 5 sec (default) whenever U execute poll command.
+But this holds good only when U do the Synchronous processing.
+If U do something  Asynchronous processing then  the polling would e executed even before the previous batch got sucessfully processed.
+This would lead at-most-once behaviour where if there is any records meets error in processing, u may not be able to fetch them back since they have already been commited.
+
+while(true)
+{
+   List<Records> batch = consumer.poll(Durations.milliSeconds)
+   doSomethingSynchronous(bathc)
+   
+}
+
+Here we get the list of records of whatever is available as new.
+
+
+
+"""enable.auto.commit""" => false(manual commit of offsets)
+
+Always prefer manual auto commit = false
+while(true)
+{
+    batch += conusmer.poll(duration)
+	if (batch has considerable amount of records)
+	{
+	    then doSomthingAsynchronos(batch)
+		consumer.commitSync();
+	}
+		
+}		
+
+
+10. Bulk request processing:
+----------------------------------
+If processing single record at  a time is expensive then we can handle them as bulk request .
+E.q Sending single record to DB is expensive. Handle them as bulk request
+
+
+
+  
+11. Consumer Offset Reset:
+-------------------------------
+"""auto.offset.reset""" = begining / latest / none
+
+data retention :   """offset.retension.minutes""" = 7 days or months
+
+
+12. HA for consumers
+--------------------------------
+Whenever the consumers poll(in poll thread) data from broker, they would also hit the consumer-coordinator(in another thread) whihc ensures the availability of the conusmer in the consumer group
+So polling often sends the Heart beat signal to coordinator often. So poll often
+
+"""Session.time.out""" = 10 seconds ( if consumer does not send heart beat in 10 seconds then that consumer is treated as down. Then the partitons are re balanced among the active consumers)
+
+"""heartbeat.interval.ms""" = 3 seconds
+How often HB must be sent to Co-ordinator
+
+In BigData processing  : Consumer might take long time to process the data. In those cases
+"""max.poll.interval.ms"""" =  5 minutes default
+
+The maximum amount if time between 2 poll request. If this time is execeed then the broker would kill that consumer from the gropu and rebalances the partition
+So always check for this config or increase it if the consumer processing would take a long time to process data.
+
+
+
+
+
+
+==============================================================================================================================================================================================================================================================
+Notes Kafka Avro Schema Registry training:
+------------------------------------------------------
+
+
+Mastering Avro :
+------------------
+CSV : Basic.Set of columns and rows. NO type is enforced.Missing data for a column
+      Easy to parse,read.
+	  
+RDBMS : Data is fully typed. Data fits
+        But data needs to be flat(row.col). Data def will be diff for each Db.
+		
+JSON : Shared across the n/w.Compact.Nested Data.Data can take any form of data.Widely accepted format.
+       No Type enforced. U can change Int to string..
+	   Json object can be bigger. 
+	   
+	   
+Avro : Address all the above problem.
+       Think of Avro as ""JSON with Schema"" : Schema + Payload .
+	   Data is fully typed. 
+	   U can compress it(less CPU usage).
+	   Schema comes aong with data. Document ur data.
+	   Data can be read across any language.
+	   Schema can evolve.
+	   
+	   Disadv : Need tools to read data.
+
+
+Avro Primitive Types:
+------------------------
+
+
+Avro Schema evlution :
+===============================
+Its all about check if we can wuse new schema to read the old data or not
+else to read new data with the old schema
+
+1. Backward compatible : Use New Schema to read Old Data
+2. Forward Compatible : Use Old Schema to read the new Data
+3. Full Compatible : We can read old and new data with the new schema
+
+""Defaults are the key for Schema evolution"""""
+
+Always make sure to have Fully Compatible Schema
+
+There can be only version of a Schema at a time. Rest would be the old version.
+
+Forward Compatible :  Adding a new field without default to a record (this is V2 Schema). We can use Old Schema to read the old and new Data . SO this Change is """Forward Compatible""".
+
+Backward Compatible : Removing an existing field which does not have default (This is V2 Schema). We can use new data to read the old and new data. So this Change is """Backward Comaptible""".
+
+Fully Compatible : Adding or removing fields with Defaults make ur change """Fully Compatible""".
+
+Non Compatible Schema Changes:
+===============================
+Adding new symbols or removing existing symbols to the enum is treated as non-compatible.
+Changing the type of a field. (String  => Int)
+Renaming a field whihc doe snot have default 
+
+Guidelines for Schema evolution:
+==================================
+1. Dont rename fileds instead use alias.
+2. Make Ur primary Key
+3. Give Default values for any fields in the schema
+4. Becareful with enums
+			
+				
+	   
+
+
+==============================================================================================================================================================================================================================================================
+To run the kafka with docker image :
+---------------------------------------------
+docker run  lensesio/fast-data-dev
+
+http://192.168.99.100:3030/
+9092 : Kafka Broker
+9581 : JMX
+8081 : Schema Registry
+9582 : JMX
+8082 : Kafka REST Proxy
+9583 : JMX
+8083 : Kafka Connect Distributed
+9584 : JMX
+2181 : ZooKeeper
+9585 : JMX
+3030 : Web Server

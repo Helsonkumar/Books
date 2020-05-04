@@ -1,0 +1,84 @@
+Microservices and Spring Boot Training:
+===========================================
+Resfu1.
+Small well choosen deployable unit.
+Cloud enabled.
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Do check out the debugging notes given in the training session.
+
+https://github.com/in28minutes/in28minutes-initiatives/tree/master/The-in28Minutes-TroubleshootingGuide-And-FAQ#debugging-problems-with-feign-and-ribbon
+
+
+API Design interview preparation:
+--------------------------------------
+https://tonyxu.io/posts/2018/rest-api-design-interview-preparation/
+https://www.linkedin.com/pulse/api-design-interview-preparation-tai-chia-makris-huang/
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+Challenges in building M/S:
+===========================================
+1. Business Boundries : Decide the right boundries for each microservices. But in reality the boundaries are evolutionary over the period of time.
+2. Config management  : We have mutiple instance of the service in many env. So there exist an opearational challenges in the config management of theses services.
+3. Elastic            : Dynamic Scale Up and Scale down .Make this system so elastic and scale up and scal down whenever needed using dynamic Load Balancing.
+4. Visiblity          : Debugging is difficult in microservice.Trace back the miscroservice whihc caused the problem by using their logs
+5. Pack of Cards      : High Availablity 
+
+
+Spring Cloud :
+===========================================
+Spring config server : Config of many ms are served via  : Sring Configuration server: Here we store the config for all services in one place(GIT).
+Elastic feature      : Naming server (Eureka). as servcie registry . Ribbon Load Balancing(Naming Server) for clinet side LB.  
+Visibility           : ZipKin Dist tracing . Netflix Api gateway (Zuul) . THis gateway host the common feature of the each service like analytics, etc.
+HA                   : Histrix(repsonds the client with default response when the service is unavailable)
+
+
+M/S Advantages:
+===========================================
+New tech and process adaption. Diff langauae for diff servcies.
+Dynamic Scaling  : Elastic
+faster Release cycle : faster to world of new features.
+
+
+Centarlized Config Server:
+=============================================
+Each Service would have diff env => Each env could have more that one instance.
+We need the config info for these instance seamlessly.
+
+
+
+Spring Cloud microservice:
+====================================
+If we wnat to change the port in whihc the service runs then we need to set the port via the -Dserver.port JVM argument under the run configuration of the instance by creating a duplicate of the original instance.
+
+
+
+Feign:
+======================================
+Feign solves invoking other M/S with lesser code . Fiegn is from Netflix.
+
+
+Ribbon:
+==========================================
+Used to auto laod balancing at tje clinet side.
+The request from client end is distributed among the available instances in the eureka server registry.
+
+
+Eureka Naming server:
+==============================================
+Used fo auto scaling and wfor elasticity.This is used for service registry and service discovery.
+
+
+API Gateway:
+================================================
+Holds the common feature applicable for all M/S
+1. Authentication and security
+2. Rate limits 
+3. Auditing of call limits
+4. fault toloerance
+5. Service aggregation
+
+Zuul: Netflix used to create a API Gateway
+
