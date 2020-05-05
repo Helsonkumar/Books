@@ -62,13 +62,13 @@ Feign solves invoking other M/S with lesser code . Fiegn is from Netflix.
 
 Ribbon:
 ==========================================
-Used to auto laod balancing at tje clinet side.
+Used to auto laod balancing at the clinet side.
 The request from client end is distributed among the available instances in the eureka server registry.
 
 
 Eureka Naming server:
 ==============================================
-Used fo auto scaling and wfor elasticity.This is used for service registry and service discovery.
+Used fo auto scaling and for elasticity.This is used for service registry and service discovery.
 
 
 API Gateway:
@@ -77,8 +77,41 @@ Holds the common feature applicable for all M/S
 1. Authentication and security
 2. Rate limits 
 3. Auditing of call limits
-4. fault toloerance
+4. fault tolerance
 5. Service aggregation
 
 Zuul: Netflix used to create a API Gateway
+
+
+
+Distributed Tracing:
+=============================
+This is the most important one. We need a single centralized location where i can see the complete chain of the request.
+Idea is to assign a unique ID for a request and trace back.
+We use ""Spring Cloud Sleuth""" : Zippkin
+
+**** Check for the solution available for Distributed tracing service : Like ELK, Kafka , Rabbit MQ
+
+Typically  : Services write their log to => Queue => Zippkin Dist Tracing Server => Database
+
+Zipkin is luanched from command line using its jar. It is not a server.
+
+To refersh an Application while it is running : """localhost:port/actuator/refresh"""
+But when the number of instance is large then we will have to manualy refresh each instance which is painful.
+
+So we use """Spring Cloud Bus""" to do this refresh for us.
+
+Spring Cloud Bus is just a messgae queue like Kafka or Rabbit MQ.
+Once an instance is started, it simply register's itself with the Spring Cloud Bus.
+So we its enoguh if we simply run the below command which signifies that if any one instance is refreshed , then all other instances would be too refreshed.
+
+"""localhost:port/actuator/bus-refresh""" ==> This would refresh all instances at once.
+
+
+
+Fault tolerance with M/S:
+=========================================
+To respond the client with a graceful response we use ""Hystrix""
+We execute a fallback method when a service call fails.
+
 
