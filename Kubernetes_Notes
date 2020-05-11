@@ -1,0 +1,324 @@
+Kubernetes Notes: v1.18 (latest)
+===================================
+Like Kubernetes: we have Docker swarm , Mesos.etc
+****************************************************************************************************************************************************************************************
+Kubernetes automates the distribution and scheduling of application containers across a cluster in a more efficient way. 
+ 
+With modern web services, users expect applications to be available 24/7, and developers expect to deploy new versions of those applications several times a day. 
+Containerization helps package software to serve these goals, enabling applications to be released and updated in an easy and fast way without downtime. 
+Kubernetes helps you make sure those containerized applications run where and when you want, and helps them find the resources and tools they need to work. 
+Kubernetes is a production-ready, open source platform designed with Google's accumulated experience in container orchestration, combined with best-of-breed ideas from the community.
+
+**************************************************************************************************************************************************************************************** 
+Kubernetes Deployment:
+We need to create ""Kubernetes Deployement Configuration"". Once the deployment is done , the kubernetes Master schedules the app the run
+
+Kubernetes Deployment Controller continuously monitors those instances
+ This provides a self-healing mechanism to address machine failure or maintenance.
+ 
+ 
+Need for Docker:
+Hypervisor : Multiple OS on a kernel. 
+             Each under the OS has its own dependency and libs. So heavy , Takes large boot time , Takes more space.
+			 
+Docker is basically meant to run multiple containarized apps on the same kernel.
+Mainly invented to avoid the dependency issues with the applications.
+
+"""" Kubernetes: Is the Container Orchestration software used to manage the docker containers and provides the auot scale features."""""
+
+We have containers running within nodes.
+
+We need to install Kubernetes in all nodes whihc would be part of Kubernetes Cluster. We have Master / Slave structure like Hadoop.
+When we install Kubernetes we indirectly install the following:
+
+1. API Server -> Front End for Kubernetes.
+2. etcd -> Reliable dist KV store. Implements the lock within the cluster to avoid conflicts.
+3. Scheduler -> Distributes the works for containers across multiple nodes.
+4. Controllers -> Does the health check of  when containers and nodes go down.
+5. Container Runtime -> S/W used to run containers(Docker). We have other container runtime like rocket, CRI-O
+6. Kubelet -> Runs in each nodes of the cluster.Ensures that the cotainer runs in the nodes as expected.
+
+********************************************************************************************
+
+Master : API Server + etcd (KV store ) + Scheduer + Controllers
+
+Worker : Kubelet + Container Runtime(Docker)
+
+********************************************************************************************
+
+Kubectl : Command line tools to deploy/manage apps in Kubernetes cluster.
+
+e.g : kubectl run app (deploy command ) 
+      info (cluster-info for cluster information)
+	  get nodes (gets the nodes info in the cluster)
+	  
+	  
+PODS : Kubernetes Object
+====================================
+PODs are relevant to Kubernetes.
+Apps encapsulated into Docker COntainer . Docker container are encapsulated within PODS.
+
+A POD can have multiple containers , but they must of diff types.
+
+Python_app_container + Helper_app_container => In the same POD => PODS are created within a Kubernetes Node.
+
+
+
+YAML :
+=======================================
+Used to hold the config for Kubernetes.
+Alternative to JSon , xml
+
+POD with YAML:
+========================================
+Basically used to configure Kubernetes objects like PODS, Containers, Services, etc
+
+*****************************************************************************************
+pod-definition.yml :
+    apiVersion : "Vresion of the kubernetes we use: V1"
+    kind       : " POD / Service / ReplicaSet / Deployment"   
+    metadata   :
+	   name: myapp-pod
+	   lables: "used to group and filter pods"
+	       app: myapp
+           type: frontend		   
+    
+    spec: " holds the actual info on the containers to be cerated within the pod"
+	   containers:
+	       - name: ngnix-container  
+		     image: ngnix
+			 
+Another Example for a DB POD like Postgres DB:
+=================================================
+Watch for the UID and PWD and the port we configure to expose this DB.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: postgres-pod
+  labels:
+    name: postgres-pod
+    app: demo-voting-app
+spec:
+  containers:
+  - name: postgres
+    image: postgres:9.4
+    env:
+    - name: POSTGRES_USER
+      value: "postgres"
+    - name:  POSTGRES_PASSWORD
+      value: "postgres"
+    ports:
+     - containerPort: 5432
+
+  
+*****************************************************************************************
+run the yaml file:
+'kubectl create -f pod-defenition.yml'
+
+to get the list of pods:
+  'kubectl get pods'
+  
+to get the definition of pod:
+  'kubectl describe pod myapp-pod'
+  
+************************************************************************************************************************
+Replicset :
+   Used to auto scale the number of pod instances based on the configured value of replicas and the available loads.
+   Similar to pod defenition.yml instead use ; ReplicaSet
+   Thru which U can create new Pods instance as per the given replica number or U can even monitor the existing Pods configured under the ""selector"" parameter.
+   
+Sample : Replicaset-definition.yml file
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+   name: myapp-replicaset
+   labels:
+      type: frontend  
+	  tier: tier-1
+spec:
+    template:
+	   metadata   :
+	     name: myapp-pod
+	     lables: "used to group and filter pods"
+	         app: myapp
+             type: frontend		   
+    
+       spec: " holds the actual info on the containers to be cerated within the pod"
+	     containers:
+	        - name: ngnix-container  
+		      image: ngnix
+	  
+	replicas : 3
+    selector:
+      matchLabels:
+         type: frontend
+
+**matchlables a: actuall debotes any pods created outside this replica-set definition file to be monitored by this replicaset.
+
+*************************************************************************************************************************************************
+Deployment:
+
+Deployment encapsulates the Replica set
+A replciaset encapsulates a POD
+A Pod encapsulates a conatiner.
+
+Deployement : is what used in production to create PODs 
+	 To enable the update of PODs (like from V1 to V2) feasible afor all instances one by .This is calling """Rollout Update"""
+     To auto undo the changes applied, if something goes wrong.
+	 To pause the container and apply the changes.
+	 These sort of features are given by the deployment.
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  labels: 
+    app: myapp
+    type: frontend
+  name: myapp-deployment
+spec:
+  template: 
+    metadata: 
+      labels: 
+        app: myapp
+      name: myapp-pod
+    spec: 
+      containers: 
+        - name: nginx-container
+          image: nginx
+  replicas: 5
+  selector: 
+    matchLabels: 
+      app: myapp
+
+
+
+Deployment Versioning and Rollouts:
+-------------------------------------
+kubectl rollout status deployment/myapp-deployment
+kubectl rollout history deployment/myapp-deployment
+
+2 Types of Deployment strategy in Kubernetes:
+--------------------------------------------------
+1. Recreate : This would pull down all the instanaces and create new pods with the updated version. But this would make the system unavailable untill all the instance are brought in back.
+
+2. Rolling-Update(default) : This would bring down one instance at a time and create a new one.
+                                It brings down one instance in the old replica-set and cerates a new / upgraded instances in a new replcia-set .
+								This ensures seamless application upgrade.
+								The old replicaset with all instances pulled down would still exist incase any roll back is needed.
+								
+Commands:
+====================
+kubectl create -f deployment-definition.yml
+
+kubectl get deploymenets -o wide
+
+kubectl apply -f deployment-definition.yml ==>> This would upgrade the instances. Update the file with the new version of the app before running it.
+or 
+kubectl set image deployment/myapp-deployment nginx-container=nginx:1.9.1
+
+kubectl rollout status deployment/myapp-deployment
+
+kubectl rollout history deployment/myapp-deployment
+
+kubectl rollout undo deployment/myapp-deployment ==>> This rollbacks all changes applied.
+
+*****************************************************************
+** Even if U give any wrong version for a image in the deplyment definition file, the kubernetes would not proceed to upgrade the existing instances untill
+one sucessfull upgrade is done. THis way, kubernetes pro-actively prevents from bringing all running instances down.
+
+We get : """ImagePullBackOff""" status for any incorrect version of the  images we give in the deployment file.
+
+*************************************************************************************************************************************************  
+	 
+Networking in Kubernetes:
+--------------------------------
+Each Nodes within a cluster has unique IP address.
+Each Pods within the Kubernetes node has Static IP like : 10.244.1.0
+So each pods within a Node are gropued within this attaically assigned IP.
+like 10.244.1.94 , 10.244.1.96
+But this leads to pods with same IP address in diff nodes.
+So we  need to establish some netwoeking or routing solutions to get unique IP address for any pods within a nodes.
+
+*************************************************************************************************************************************************
+Services:
+========================================== 
+How to expose the Service in a container within a node to the external client on the internet.
+A client can access a node IP , but not the IP of the POD assigened internaly within a Node.
+Service comes for rescue on this.
+
+Client => Service => Nodes => PODS
+
+*** All services within a Kubernetes cluster can be accessed by any PODs or other services using the service names.Here we dont need to mention any IP address.
+*** The """kube-dns""" component in the kubernetes architecture makes this possible
+
+
+Types of Service :
+
+1. NodePort Service:
+========================
+Type acts a bridge between client and ur app in pods.
+
+apiVersion: v1
+kind: Service
+metadata:
+   name: myapp-service
+   
+spec:
+   type: NodePort       --> This is NodePort service
+   ports:
+     - targetPort: 80   --> port on the Pod which holds the app service
+	   port: 80         --> port on the service we create
+	   nodeport: 30008  --> port on the node which is exposed to client : THis shoudl be always within a the range ""30000 - 32767""
+   selector:            --> thru this we tell service which pods are suppose to be expose.Multiple pods in the same node or in diff nodes can be managed by the service we create automatically. 	   
+      app: myapp        --> label from the pod definition. This helps us select the pod from a given list of pods.
+
+Infact the service itself acts a load balancer when the pods are distributed across multiple nodes and the service we create distributes itself.
+
+
+2. ClusterIP Service:
+========================
+If we have 3 POD for frontend and backend and DB
+We need to let the services talk to each other.
+But when the user connects to one of the frontend nodes via Nodeport service , then among which backend service the front end service must connect.
+
+So we create ClusterIP service for this case, where we typically create one ClusterIP sevrice for each layer like backend or DB.
+
+ClusterIP internally acts as load balancer and we simply need to hit this service in a port , and it distributes the loads among the udnerlaying instances of PODS.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend   --> defines the names of the sevrice layer. It can be Database, for DB layer
+spec:
+  type: ClusterIP --> This is a ClusterIp service
+  ports:
+    - targetPort:  80
+	  port: 80           --> We dont give Nodeport here
+	  
+  selector:
+     app : myapp-pod
+     type: backend-pod	 
+  
+
+3. LoadBalancer :
+===============================
+This is what we use to expose our service to external clients.
+The type : LoadBalancer
+But this works only in the """Public Cloud platforms"""
+  
+When Ur frontend Service runs across multiple nodes whihc nodes Ip would U expose to the client?
+So in that case we need a Load balancer at the top and have its IP exposed to the external client.
+But setting up such LB by ourself is tedious.
+So we can leverage the native load balancer service offered by the Public Cloud Platforms.
+
+So it is enough if U simply mention the type of the Service as ""Load Balancer"" in ur Service-deployment.yml file.
+That would simply create a Load Balancer for U. 
+And then We can expose the IP of this LB to the Client.
+
+
+
+  
+   

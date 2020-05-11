@@ -14,7 +14,7 @@ Drawback of M/S:
 ====================
 Infra cost is high
 Integration testing of servcies is complex
-Beaware of nano-service anti patterm (where a service is too fine grained> The serialization between services outweighs its utility)
+Beaware of nano-service anti patterm (where a service is too fine grained) The serialization between services outweighs its utility)
 
 A UI project is not an ideal candidate for M/S pattern since it requires lot of data exchange between servcies.
 

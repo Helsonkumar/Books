@@ -115,3 +115,17 @@ To respond the client with a graceful response we use ""Hystrix""
 We execute a fallback method when a service call fails.
 
 
+
+Importance of distributed tracing and Monitoring services:
+===================================================================
+Diagnose latency between servics and collate logs from dozen of lossely coupled services.
+
+Logging: Service state is captured
+Monitoring : Monitoring is the process of recording information, or predefined metrics, allowing operators to achieve visibility into their applications state. 
+             These metrics help answer questions around resource allocation or to determine if requests are going where they should. 
+			 when circuit breakers are triggered on or off or which traffic shifting rule was invoked in routing the request.
+			 Monitoring in specific provides the health check of the service.
+			 
+Tracing: Tracing starts at the entry-point of a request into an application. A trace is started for the request and will have a unique identifier generated for that request. 
+         tracing allows you to diagnose end-to-end traffic for requests
+           
