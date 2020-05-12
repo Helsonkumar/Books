@@ -1,0 +1,118 @@
+Docker Notes:
+======================
+
+Docker is not meant to run OS. Instead it is meant to run a process inside a OS.
+Docker container can run only until the process/service within the container lives.
+It is exited once the process is completed or shutdown.
+
+
+Community Edition | Enterprise Edition 
+Check for the differences between these variants. What does emt.edition offers on top of communtiy edition.
+
+Note:  Docker are not meant to run an OS as standalone. Instead we can run a process within an OS. If we run OS as standalone, the container would start and exit immediately.
+       Containers would run only untill the process within them is running. Once the process is stoped the container would exit.
+	   
+	   
+Basic Commands :
+=========================
+docker run image-name ==> THis would pull an image if it doee not exists and run the image as a container.
+
+docker ps / docker ps -a ==> List downa all the conatiners
+
+docker stop container-id or container-name 
+
+docker rm container-id/name  => remove a container which would consume some resource even if it is not running
+
+docker images  ==> list of available images in the host
+
+docker rmi => removes an image
+We should always kill or stop a running container before removing its image.
+
+docker pull image_name  ==> simply pulls the image and does not runs it as contianer
+
+docker run ubuntu sleep 150 ==> launch an OS and kicks a sleep process for 100 sec.Afatre that it would exit.
+
+docker exec container-id <command to execute> => This would execute a commnd in the container.
+e.g : docker exec ubuntu cat etc/*release*
+
+interactive and Detached mode:
+----------------------------------------
+docker run -d image_name ==> run the docker container in detached/background mode (by default it runs in the interactive mode)
+
+
+
+Docker - STDIN:
+---------------------
+docker run -it image_name ==> When the app has some User promt in the STDIN  (using -it means interactive terminal mode)
+w/o -it we would not bet the stdin prompt
+
+
+Docker port mapping:
+------------------------
+docker run -p 5200:80 nginx
+
+then run:  curl http://localhost:5200 ==> this would give the default web page of the nginx Server.
+
+(docker run host_port:container_port image_name)
+Each docker is assinged an internal IP(accessible only form within the docker host or node)
+To expose the docker to the external clinet outside the docker host , we need to map the docker port to the port in the docker host
+
+
+
+Docker Volume mount:
+------------------------
+Each conatiner has its own Volumnt_mount + Process + Network
+So we if we delete a container , its volumne mount with all data would be lost.To prevent this we use volum mapping.
+
+docker run host_dir:container_dir image_name
+
+
+
+Docker inspect:
+------------------------
+docker inspect container_name
+
+
+
+Docker logs:
+----------------------------
+docker logs container_name
+
+prints the logs of a container
+
+
+
+DockerFile:
+-------------------------------
+We use dockerfile to build an image if our application.Like web apps, or spring boot apps ,etc
+
+Dockerfile format:
+
+########################################################################################################################################################################################################################
+INSTRUCTIONS | ARGUMENTS
+
+FROM Ubuntu                  --> All dockerfile start with FROM .Denotes the OS to which this image is bound with
+RUN  apt-get update          --> Install all the dependencies for the image we build
+RUN apt-get install python
+
+RUN pip install flask
+RUN pip install flask-mysql
+
+COPY . /opt/source-code      --> Copy the source code from the host where the dockerfile is built to the specific folder inside the image.
+
+ENTRYPOINT FLASK_APP=/opt/source_code/app.py flask run  --> Denotes the entry point of the applciation
+
+#########################################################################################################################################################################################################################
+
+Docker Build:
+-------------------
+Used to build the image of our app
+
+docker build DockerFile_name helson/helson_app -->  tag_name
+
+docker push helson/helson_app --> push the image to the docker hub
+
+
+
+
+

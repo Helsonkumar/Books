@@ -319,6 +319,24 @@ That would simply create a Load Balancer for U.
 And then We can expose the IP of this LB to the Client.
 
 
+*************************************************************************************************************************************************
+We can run Kuberntes via Openshift platform or via managed Kubernets like the one provided by the Cloud vendors like AWS EKS or GCP Kubernetes.
 
+Diff  : 
+Openshift supports are limited by Centos , Red HAT Enterprise Linux. But in managed kubernetes we have support for Centos, Ubunto,etc
+OPenshift grants the CI CD pipelines as extra features. Just commit the code and U get the pipeline executed. The service registry is pre installed.
+Enhanced Security feature compared to managed kubernetes.
+Helm is not supported in openshift , instead we use Openshift templates. But openshift templated are not that flexible.
+Aggregated logging feature is given by Openshift. We get EFK (ElasticSearch FluentID Kibana) auto installed in openshift.But in mananged Kubernetes Customer need to take care.
+Operational Metrics features are auto provided in openshift.But in mananged Kubernetes Customer need to take care.
+Service discovery is feasible with UI(with sevice catalague feature) given by Openshift. This is not available in managed Kubernetes.
   
-   
+Openshift uses Routes. Kubernetes use Ingress.
+Like Deployments, we have DeplymentConfig in Oepnshift. 
+via Dep.Config we can use hooks to prepare ur env for update.
+Set trigger to auto deploy when new changes in image is detected.
+But concurrent update is not availabel thru Dep.Config.
+
+*************************************************************************************************************************************************
+
+
