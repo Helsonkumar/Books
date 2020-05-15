@@ -112,7 +112,183 @@ docker build DockerFile_name helson/helson_app -->  tag_name
 
 docker push helson/helson_app --> push the image to the docker hub
 
+Docker would cache the build steps and would not reurn the whole build again and again every time make changes to the DodkerFile.
+
+
+
+Docker push:
+-------------------
+docker push image_name  ==> used to push the built image to the DockerHub
+
+
+
+Docker env variable:
+-------------------------
+docker run -e APP_COLOR=RED image_name
+(inside image source code we would call env variable as os.environ.get("APP_COLOR").
+use docker inspect to find the variable and config set up of a container.
+
+
+
+Command (CMD) Vs ENTRYPOINT:
+------------------------------------- 
+Who decides whihc process must run once the container is started??
+
+We use CMD = bash / sleep 5 etc inside the source code of the image we nwat to run.
+
+docker run ubuntu sleep 5 (here "seleep 5" is the command which replaces the commnd given within the Ubuntu image code)
+
+ENTRYPOINT decides the first command to be executed when the container is started.
+
+We can use both ENTRYPOINT and CMD in the same source code as 
+ENTRYPOOINT=sleep
+CMD=10
+
+
+
+Docker Compose:
+-----------------------------------
+Instead of running the containers one by one we use "docker compose" using the docker-compose.yml file to start the container all together.
+This makes the config stuffss available at a single location ofreasy management and container changes.
+
+Imagine an APplication of the following nature:
+
+VotingApp         Result_App                 
+   ||                 ||
+   ||                 ||
+   \/                 \/
+Redis_DB          Postgres_DB
+      \\          //   
+       \\        // 
+        \\      //
+		Worker_APP
+		
+Each Runs as a seperate container.
+
+So we use docker-compose to run these containers on ""Single_Docker_Host""	
+We use links(to be depricated in the future) to establish connection between each conatiners.
+
+Before using links : Use names for Ur docker container.The name would be used while establishing links among containers.
+
+docker run --name=db postgres:9.4.0
+(name is used to name the instance running inside the conatiner)
+
+docker run --link db:db --link redis:redis result_vote_app
+(db signifies the name of the instance)
+Note: db:db == db
+
+And that is how a Service talks to another service via links. Inside the service code we refer to the link as ""@Hosts""
 
 
 
 
+Sample docker-compose.yml file:
+#####################################################
+
+services:
+    web:
+	  
+	  
+	  
+	  
+	  
+""docker-compose up""  ==> use to run the docker-compose.yml file	  
+	  
+Sample Docker Compose file:
+---------------------------------
+
+
+
+
+
+
+Docker Resgistry :
+----------------------
+By defaukt the images are pulled from the public docker hub registry
+it is of the format as below:
+
+docker run nginx   ====>  docker run  docker.io/nginx/nginx  ====>  docker run <registry_name/account_name/image_name>
+
+To host a private regsitry : we have another image for that.It is enough to set up a repo in our localhost.
+
+docker login private_registry_name.io
+
+docker run private_registry_name.io/apps/internal_app
+
+
+##########################################################################################################################################
+
+docker run -d -p 5000:5000 --name registry registry:2  ==> THis would run a container which acts as our private registry
+
+docker image tag my_image localhost:5000/my_image      ==> This would simply tag the image we want to be pushed to private registry
+
+docker push localhost:5000/my_image                    ==> This would push the image to the private registry
+
+docker pull localhost:5000/my_image                    ==> To pull a image from a reistry
+
+##########################################################################################################################################
+
+Docker Networking:
+-----------------------
+Each Docker container runs as child system inside the host system. Their process are sub-process under the host root process.
+This is served by namespace-id service of the docker
+
+A docker engine consists of the following :
+1. Docker CLI
+2. Docker REST API ==> To talk send commands to the underlaying Docker Deamon
+3. Docker Deamon   ==> THis mananges the containers/networks,etc
+
+A docker CLI can be at diff system and can talk to the docker deamon @ another system via REST API calls.
+
+***docker run -H=remote-docker-engine:2375 ubuntu   ==> The CLI talks to a deamon in another system
+
+Each conatiner can be restricted to the amount of CPU and Memory using Cgropus as below:
+
+***docker run --cpus=0.5 ubuntu  ==> to allocate not more than 50% of the host CPU
+
+***docker run --memory=100m ubuntu  ==> To allocate memory to the container.
+
+
+
+Docker Storage:
+----------------------------
+Each Container has a folder named : /var/lib/docker : Whihc holds the folder specific for containers,imges,etc
+
+Docker is of layered architechture.
+Each items in the docker file mapps to a layer.When we reuse the same image for creating container, then the reusable layer are reused from Cache.
+
+The Image layer ==> READ_ONLY Layer
+The Container Layer ==> READ_WRITE Layer
+   The data for each container is stored in this read_write layer
+   
+   
+Docker Volume : This is handled by the Storage Driver:
+---------------------------------------------------------
+docke run -v volume-2:/var/lib/my_sql image_name
+Here the docker auto creates a volumn insdie the /var/lib/docker/volume ==> folder
+
+If we meed to map the existing volume to the docker to get persistent data :
+
+types of volumne mount :
+---------------------------
+Volume_mount
+Bind_mount
+
+
+docker run --mount type=bind ,source=/external/volume/path , target=/var/lib/mysql image_name  ==> Latest way to mount/map an external volume to the docker container.
+
+
+ 
+Docker Networking:
+------------------------------
+Docker uses the internal DNS server to let container access eacj other using thir container name instead of the IP assigned for each container. Like we used @host : mysql in the Voting-app example.
+
+Docker has 3 Network Types :
+-------------------------------1
+1. Bridge(Default) ==>Each containe ris assigned an IP from the interwork network. Like 172.17.0.1
+
+2. None ==> The docker containe is not attached to any network.So they will be recognized by each other.
+
+3. Host ===> Here each docker container is connected to the host network. They would directly get attached to the host port. So no port mapping is needed to expose them to the external world.
+
+****docker network ls ===> list the networks available in the docker
