@@ -1,0 +1,22 @@
+System Design Notes:
+==================================
+
+Proxy Vs Reverse Proxy
+---------------------------
+Proxy : 
+1. Anonymity (clients are hidden from the service provider
+2. Caching
+3. Geo Seperation
+4. Blocks unwanted content
+
+Reverse Proxy :
+-----------------
+1. Load Balancing
+2. Caching
+3. Canary Deployment ==> Where a new change is deployed in one server and few of the client traffice is servered by this updated server.
+
+Load Balancing:
+-------------------
+This is a special case of reverse proxy. 
+Here the proxy server stores and manages the metadata of the backend server.
+Eitheir distributes the load in ROUND_ROBIN fashion or based on the hearbeat or health check result of the backend server.
