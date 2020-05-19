@@ -6,17 +6,51 @@ Proxy Vs Reverse Proxy
 Proxy : 
 1. Anonymity (clients are hidden from the service provider
 2. Caching
-3. Geo Seperation
+3. Geo fencing
 4. Blocks unwanted content
 
 Reverse Proxy :
 -----------------
 1. Load Balancing
 2. Caching
-3. Canary Deployment ==> Where a new change is deployed in one server and few of the client traffice is servered by this updated server.
+3. Canary Deployment ==> Where a new change is deployed in one server and few of the client traffic is servered by this updated server.Otherwise called A/B testing.
+
 
 Load Balancing:
 -------------------
 This is a special case of reverse proxy. 
 Here the proxy server stores and manages the metadata of the backend server.
 Eitheir distributes the load in ROUND_ROBIN fashion or based on the hearbeat or health check result of the backend server.
+
+Alogrithms used by LB:
+-----------------------------
+1. Round Robin
+2. LeastConnection : Server with less active connection and high resource availability and servers with high repsonse time
+3. Hash : Where client IP address or requets URL is hashed and the client request is served with the specific server among the set of server.
+4. Random pick of 2 : Pick any 2 servers randomly and use the elast connalgorithm to derive the best server to serve clients request.
+
+
+######################################################################################################################################################################################################################################################
+
+Scaling Systems:
+------------------------
+Horizontal Scaling & Vertical Scaling
+
+Horizontal Scaling is waht we use when we need have:
+
+**High Throughput
+**High Availability
+**High Resource capacity
+
+But Horizontal Scaling is actually limited by :
+1. Wheather Ur app is of Shared-Nothing Architechtured or not.
+2. Stateless.
+
+In those cases horizontal scaling becomes more challenging.
+
+
+######################################################################################################################################################################################################################################################
+
+
+
+

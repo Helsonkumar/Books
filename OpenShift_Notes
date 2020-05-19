@@ -1,2 +1,84 @@
 OPenShift Notes:
 =========================================
+OpenShift is wrapper on top of Kubernetes.
+
+It enables an uatomated deployment and container management seamless.
+via auto generated CI/CD pipelines,inbuilt Openshift registry, GUI, etc
+
+We can control it via  : CLI , REST API, GUI
+
+> ""oc"" is the CLI
+
+Build Strategies in OpenShift :
+-----------------------------------------
+**Docker Build    : User must write the docker file ==> Run the build job ==> Image is pushed to OS registry.
+
+**Source-to-Image : S2I tool takes the source and creates the docker image by iteself.
+                    for e.g : it takes a pre-built python-build-image and injects the application code into it to create the final image.
+					
+**Custom-Build    :  If we need to create app.jar files then we can use Custom build option.
+
+The build-config page on OS GUI contains the YAML file. We can change the type ofthat buil.config file to build the images accordingly.
+
+Image Stream :
+=======================
+OS has many pre-build build images.
+Image Streams are just the abstraction over the docker images to get the consistent docker images using the image ID.
+Image strean is just a pointer between image-id and the actual image in the registry.
+
+
+
+Build Trigger:
+=======================
+We create WebHooks to set trigger between a SCM and Openshift cluster. 
+This is to create a build and deploy an image once there is a code change in the repository.
+
+Deployment:
+==================
+We leverage the Deployment feature of the kubernetes in OpenShift as well.
+
+We have ""DeploymentConfig"" as kind in the Deployment.yaml file.
+
+We mention the replicas and the deployement strategy as Rollout(for Rolling Update).
+
+While Deploying we can have : recreate / Rolling Updates / A/B Deplyment strategy
+
+We can control the traffic to our PODs via OpenShift itself for A/B Deployment.
+
+In Openshift cluster we can either directly deploy an image from a source or we can deploy an existing image in the Openshift registry which is 
+already built using build.config via Deployment.config.
+
+
+
+Networking in Openshift :
+==============================
+Openshift SDN : Software Defined Networking
+
+This SDN grants each pod a unique IP address within their Host and permits the inter-pod communication via ""Services""
+It has a component called ""Overlay Network"" with inbuild DNS to map an IP to the name of the containers or services in a POD.
+Its uses Open vSwitch.
+
+SDN has many plugins:
+Among them ""ovs-multitenant"" is used to isolate pod within multiple projects. So each pods in a project is assigned with a unique IP address.
+
+
+Services & Routes:
+===================================
+Like Kubernetes, services in OS is used to allow the inter-communication between diff PODS.
+ 
+But to expose a POD(say like Frontend app) to the external client, we use ""Routes"".
+
+***We can configure Load Balancing in Routes in 3 diff ways:
+1. Source : Like Sticky session to let a user IP to connect a single/same instance of the application running behind a service.
+2. Round Robin : A usual
+3. LeastConn : Only to the instance which has less connection
+
+
+
+
+
+
+
+
+   
+
