@@ -53,4 +53,9 @@ In those cases horizontal scaling becomes more challenging.
 
 
 
+The following service(s) have been created in your project: redis.
 
+       Password: redis_password
+ Connection URL: redis://redis:6379/
+
+For more information about using this template, including OpenShift considerations, see https://github.com/sclorg/redis-container/blob/master/3.2 .
