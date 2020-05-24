@@ -5,21 +5,25 @@ SOLID Principles:
 ##########################################################################################################################
 
 SRP : Single Responsibility Principles
---------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Always create a class with only one responsibility. This makes Ur code or class to be easily managed.
 E.q : Consider a Journal Class where we add and remove entries via add and remove method.
 Avoid adding additional responsility like Saving and Loading a Journal to/from a file or memory.
 This makes the code easy to manage.
 
 
+
 Open Closed Principle:
---------------------------------------------------------------------------------------------------------------------------
-Open for extendsion and closed for modificcation.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Open for extension and closed for modificcation.
 
 Instead of modifying the existing code for adding new fucntionality, make a Gnereic interface and have that extended 
 by the concrete class with new functionality.
 
 
 
-
+Liskov Substituion Principle:
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Simply states that we must be able to replace a Sub clas in place where a Base class is expected.
+The Behaviour of the method into which the items are substituted must be consistent(mst give appropriate result) with both Base class and Sub class. 
 

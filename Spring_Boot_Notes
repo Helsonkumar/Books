@@ -1,0 +1,210 @@
+Spring Boot Notes:
+-----------------------------
+Spring is an alternate to J2EE or Java EE EJB framework.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Check for the below items:
+-------------------------------------------------------------------------------------------------
+spring.io/projects
+Controlled navigation
+State Machines
+
+
+
+
+
+
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Inversion Of Control :(IOC) :  To habdover the object creation to another Object Factory
+
+Spring Cntaier : This is an object factory nad helps us in:
+1. IOC
+2. Dependency Injection.
+
+We need to configure the Spring Beans and Container and then retrive the beans from the container.
+We can create container (Context) and configure bean thru Xml, annotation of java class.
+
+This is how we configure the bean  in the applicationContext.xml file in the classpath.
+Refer to this container in the main app.
+ClasspathContextXML  context = new ClasspathContextXML("applicationContext.xml")
+Caoch bean = context.getBeans("bean-id" , coach.class)
+
+Thur this we can inject our beans via config file.
+So we can pass the bean name as string during runtime and this would not need any application code change.
+
+ <bean id="myLoggerConfig" class="com.luv2code.springdemo.MyLoggerConfig" init-method="initLogger">
+    	<property name="rootLoggerLevel" value="FINE" />
+    	<property name="printedLoggerLevel" value="FINE"/>
+  </bean>
+	
+	
+Dependecny Injection : One object would be dependent on another object to cater a service.
+So we can inject this dependent object during runtim via the config file(container file)
+This is called as dependency injection.
+
+Always code for interface in the Spring projects.
+
+We can inject the dependency in 2 diff ways for an object.
+1. Via Constructor reference
+2. Via Setter methodss
+
+****Contructor Injection :
+1. Create a dependent interface and create a class implementing that interface.
+2. Create a constructor in the dependent class with the dependency object as constructor parameter.
+2. Add the bean details in the container file.
+
+<bean id="Cricket" class="Core_App.CricketCoach">
+ 		<constructor-arg ref = "Sooth"/>			
+</bean>
+ 		
+
+
+
+****Setter Injection:
+We use setter methods using the property in the bean to inject the dependent object.
+The sproperty referes to a setter method with the relevant name : Here ""setEmail()""
+Here for object we pass :ref and for lietral we pass :value.
+
+<bean id="Cricket" class="Core_App.CricketCoach">
+ 		<property name="email" value="helsonkumar@gmail.com" />
+ 		<property name="coach_name" ref="bean_id"/>		
+</bean>
+	
+	
+*** Passing in literal value via Properties file
+we can pass in a literal as parameter to a method via the Config file
+
+
+
+Bean Scope :
+--------------------------
+By default the scope of bean is ""SingleTon" -> One instance of the bean is shared by all.
+We can change the scope of the bean as ""prototype"" in the config file so a new instance is created for every bean request.
+
+<bean id="BasketBall"  class="Core_App.BasketBallCoach" scope="prototype">
+ 	    <property name="assignFortuner" ref="FortuneTeller" />
+</bean>
+
+
+
+Custom Init and destry-method:
+-----------------------------------
+We can add custom init and destroy method to add the actions to be performed before and after bean creation or context is closed.
+
+But destroy methods woudl not be called if the bean scope=prototype
+Note :The init and destroy method should be of no-arg methods.
+
+
+
+IOC and Dependecny injection via the Java Annoatations:
+--------------------------------------------------------------
+Annotations are just the metadata for our java class.
+
+Instead of creating the bean by ourself we can ask spring to create one and add them to the container  using  """@Component""" annoatation.
+This would create a bean of that class with the bean id as the class name with the first char lower cased.
+
+
+
+@PostConstruct and @PreDestroy and @Scope("singleton"):
+--------------------------------------------------------------
+@PreDestroy method will not be called if the scope the bean is prototype.
+A prototype bean must implement a DisposableBean interface and its destroy() method would be called by CustomBeanHandler.
+
+
+
+
+Configure the container using Java Class:
+--------------------------------------------------------------
+This way we cab define the configuration using the JavaConfig file instead of an XML file.
+
+@Configuration
+@ComponentScan("package-name")
+@Bean  : To define the bean in a config file and intecept each call to that Bean.
+@PropertySource("classpath:sports.properties")
+
+
+
+############################################################################################################################################################################## 
+
+Spring REST Developement Notes:
+
+##############################################################################################################################################################################
+
+XML and JSON are the common format used by REST
+jackson-databind is the module used to ""JSON <-> Java POJO""
+
+**JackSon is gona call the setter method for creating the POJO
+**And Getter method for creating the JSON from the POJO.
+
+ObjectMapper mapper  = new ObjectMapper();
+mapper.readValue("inpFile.json", student.class)
+mapper.writeValue("outputFile.json", mapped_pojo)
+
+@JsonIgnoreProperties(ignoreUnknown=true)
+
+Http request :
+--------------------
+Request method : GET . PUT, POST , DELETE
+Request Body 
+Request Header --> metadata
+
+
+Https Response Body :
+-----------------------
+Informational : 100 - 199 
+Successful    : 200 - 299
+Redirection   : 300 - 399
+Client-Error  : 400 - 499
+Server-Error  : 500 - 599
+
+MIME : Multipurpose Internet Message Exchange:
+defined as Content-type
+
+application/json or xml : defines the format of the message.
+
+
+***@RestController ==> @Controller  + @ResponseBody 
+(Check also @RequestMapping("/springDemo")
+            @GetMapping("/student") )
+Used to mark a class as request handler.
+Spring RestController annotation is used to create RESTful web services using Spring MVC.
+Spring RestController takes care of mapping request data to the defined request handler method.
+Once response body is generated from the handler method, it converts it to JSON or XML response.
+
+
+@PathVariable
+@PostConstruct  ==> To define the actions to be performed only once 
+
+
+Exception Handling in REST APi :
+---------------------------------------
+Create a Custom Exception extending the RunTimException like ""StudentNotFoundException""
+Create Custom Error Response (StudentErrorResponse) Class which would be actaully passed to the Client.
+Create method (name handleExeption whihc takes the StudentNotFoundException as paramemter) with @ExceptionHandler to handle the StudentNotFoundException.
+and resturns the ResponseEntity<StudentErrorResponse>.ResponseEntity is jiust the wrapper on the response message with status code access etc
+
+
+Global Exception handler with @ControllerAdvice : Interceptor
+---------------------------------------------------------------------
+@ControllerAdvice is used as filter or interceptor infornt of the RestController
+This would intercept the request message with 
+@PreRequestHandler and @PostResponseHandler
+This would host the reusable global exception handler for many Rest Controllers.
+
+Client  -> ControllerAdvice -> Service.
+
+****Interceptors:   Check fot the usuage of interceptors in allowing only Specific request type like GET or PUT and not DELETE or UPDATE like this.
+
+
+API Design practise:
+--------------------------
+1.Analyze the API requirement => What a client must perform full CRUD or just minor read or write.
+2.Identify the main entities. Use the plural for of entities. api/customers not customer
+3. Use https methods to assign action on resource.
+
+Anti-patterns:
+-------------------------------
+1.dont embbed the http method name in the method name like putCustomers , updateCustomers
