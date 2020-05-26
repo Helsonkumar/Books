@@ -27,3 +27,42 @@ Liskov Substituion Principle:
 Simply states that we must be able to replace a Sub clas in place where a Base class is expected.
 The Behaviour of the method into which the items are substituted must be consistent(mst give appropriate result) with both Base class and Sub class. 
 
+
+
+Interface Segregation Principle:
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Instead of putting all features in the same interface we need to segerate the features to multiple interface.
+Think of  an interface called PrintingDevice whihc has Printing and Scanning feature.
+If this is extended by a OldFashionedDevice then it must implement Scannng feature as well whihc is not applicable for that OldFashinedDevice.
+That would not make any sense.
+So design Ur interface sensibly.
+
+
+
+Dependency Inversion Principle:
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Simply states that the High level modules must not depend on the low level components.
+Code for interface as method parameter instead of the low level discrete type.
+Think of Relations and FindRelations example.
+Low Level : Which simply exposes a Data structure or storage 
+High level : Which utilizes the low level componenet one.
+
+
+
+Gamma Categorization
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1.Creational pattern : Deals with the object creation
+2.Structural pattern : Deals with the Class  / Interface design. Insist a good API design
+3.Behavioural pattern : Each pattern is unique.
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Creational Pattern :
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------d
+Builder Design Pattern:
+============================
+Motivation :
+To construct an object piebce by piece. 
+Think of StringBuilder to construct a String with "N" arguments.
+
+

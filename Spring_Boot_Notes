@@ -2,6 +2,11 @@ Spring Boot Notes:
 -----------------------------
 Spring is an alternate to J2EE or Java EE EJB framework.
 
+
+Client -> Controller_advice(Interceptor) -> Controller -> Service -> DAO -> Data_Store
+
+
+
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Check for the below items:
 -------------------------------------------------------------------------------------------------
@@ -10,7 +15,19 @@ Controlled navigation
 State Machines
 
 
+List the process running on a port: fuser 8081/tcp
+kill -9 process_id
 
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Items to be explored:
+1. How to filter a request based on the request type before hitting the controller. 
+   e.g : Allow only GET request and not POST.
+2. Explore Interceptors in spring boot.
+3. Explore Response<enitity>
+4. How to dynamically pass in values for Qualifer filer for our dependencies.
+5. Get familiar with the httpStatus Codes.
 
 
 
@@ -18,9 +35,9 @@ State Machines
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Inversion Of Control :(IOC) :  To habdover the object creation to another Object Factory
+Inversion Of Control :(IOC) :  To handover the object creation to another Object Factory
 
-Spring Cntaier : This is an object factory nad helps us in:
+Spring Contaier : This is an object factory and helps us in:
 1. IOC
 2. Dependency Injection.
 
@@ -184,7 +201,7 @@ Exception Handling in REST APi :
 Create a Custom Exception extending the RunTimException like ""StudentNotFoundException""
 Create Custom Error Response (StudentErrorResponse) Class which would be actaully passed to the Client.
 Create method (name handleExeption whihc takes the StudentNotFoundException as paramemter) with @ExceptionHandler to handle the StudentNotFoundException.
-and resturns the ResponseEntity<StudentErrorResponse>.ResponseEntity is jiust the wrapper on the response message with status code access etc
+and returns the ResponseEntity<StudentErrorResponse>.ResponseEntity is just the wrapper on the response message with status code access etc
 
 
 Global Exception handler with @ControllerAdvice : Interceptor
@@ -205,6 +222,40 @@ API Design practise:
 2.Identify the main entities. Use the plural for of entities. api/customers not customer
 3. Use https methods to assign action on resource.
 
+
 Anti-patterns:
 -------------------------------
 1.dont embbed the http method name in the method name like putCustomers , updateCustomers
+
+
+
+REST CRUD operation:
+----------------------------------------------------------------------- 
+@PostMapping("/customer")
+public Customer saveCustomer(@RequestBody Customer customer) {
+     CustomerService.saveCustomer(customer)
+}
+
+	 
+Set the id field of the customer(entity) to 0
+Do not pass in the id value in the client request message. This would be set inside the request mapper(controller) as stated above to 0.
+So hibernate saveorUpdate methhod would treat this as new customer , since the id with 0 as value would be treated as empty or null.
+The id would then be auto generated as metioned in the entity class.
+
+
+@PutMapping("/customer")
+public Customer saveCustomer(@RequestBody Customer customer) {
+     CustomerService.saveCustomer(customer)
+}
+
+Pass the id value of the entity in the PUT request which is supposed to be updated.
+
+@DeleteMapping("/customer/{customerId}")
+
+
+
+##############################################################################################################################################################################
+
+Spring Boot:
+
+##############################################################################################################################################################################
