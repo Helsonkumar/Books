@@ -24,10 +24,17 @@ kill -9 process_id
 Items to be explored:
 1. How to filter a request based on the request type before hitting the controller. 
    e.g : Allow only GET request and not POST.
+   Simple Solution : Use Interceptors of MVC.
+   But for complex requirement : We need to use API management tools. Explore them as well. Do they mean the API Gateway for this???
 2. Explore Interceptors in spring boot.
 3. Explore Response<enitity>
 4. How to dynamically pass in values for Qualifer filer for our dependencies.
-5. Get familiar with the httpStatus Codes.
+5. Get familiar with the important HttpStatus Codes. 
+6. How to mention multiple packages in component-scan
+7. How to call another metnod in another controller from a controller.
+8. How many controllers a project can have.
+9. Check what is request redirection.
+
 
 
 
@@ -46,10 +53,10 @@ We can create container (Context) and configure bean thru Xml, annotation of jav
 
 This is how we configure the bean  in the applicationContext.xml file in the classpath.
 Refer to this container in the main app.
-ClasspathContextXML  context = new ClasspathContextXML("applicationContext.xml")
+ClassPathXMLApplicationContext  context = new ClassPathXMLApplicationContext("applicationContext.xml")
 Caoch bean = context.getBeans("bean-id" , coach.class)
 
-Thur this we can inject our beans via config file.
+Thru this we can inject our beans via config file.
 So we can pass the bean name as string during runtime and this would not need any application code change.
 
  <bean id="myLoggerConfig" class="com.luv2code.springdemo.MyLoggerConfig" init-method="initLogger">
@@ -82,7 +89,7 @@ We can inject the dependency in 2 diff ways for an object.
 
 ****Setter Injection:
 We use setter methods using the property in the bean to inject the dependent object.
-The sproperty referes to a setter method with the relevant name : Here ""setEmail()""
+The property refers to a setter method with the relevant name : Here ""setEmail()""
 Here for object we pass :ref and for lietral we pass :value.
 
 <bean id="Cricket" class="Core_App.CricketCoach">
@@ -111,7 +118,7 @@ Custom Init and destry-method:
 -----------------------------------
 We can add custom init and destroy method to add the actions to be performed before and after bean creation or context is closed.
 
-But destroy methods woudl not be called if the bean scope=prototype
+But destroy methods would not be called if the bean scope=prototype
 Note :The init and destroy method should be of no-arg methods.
 
 
@@ -135,7 +142,7 @@ A prototype bean must implement a DisposableBean interface and its destroy() met
 
 Configure the container using Java Class:
 --------------------------------------------------------------
-This way we cab define the configuration using the JavaConfig file instead of an XML file.
+This way we can define the configuration using the JavaConfig file instead of an XML file.
 
 @Configuration
 @ComponentScan("package-name")
@@ -209,11 +216,12 @@ Global Exception handler with @ControllerAdvice : Interceptor
 @ControllerAdvice is used as filter or interceptor infornt of the RestController
 This would intercept the request message with 
 @PreRequestHandler and @PostResponseHandler
+
 This would host the reusable global exception handler for many Rest Controllers.
 
 Client  -> ControllerAdvice -> Service.
 
-****Interceptors:   Check fot the usuage of interceptors in allowing only Specific request type like GET or PUT and not DELETE or UPDATE like this.
+****Interceptors:   Check for the usuage of interceptors in allowing only Specific request type like GET or PUT and not DELETE or UPDATE like this.
 
 
 API Design practise:
@@ -259,3 +267,20 @@ Pass the id value of the entity in the PUT request which is supposed to be updat
 Spring Boot:
 
 ##############################################################################################################################################################################
+2 Services can communicate wtih each other via http or MQ service.
+
+
+SOAP  : Simpky defines the service contract between entities.
+Uses WSDL. It is mandate to define a service definition.
+It is simply a Restriction.
+It is always based on XML.
+Envelope -> Header -> Body (This would be structure of the message)
+
+
+REST : It is simply an archetechtural approach.
+REST does not mandate a service definition.
+Used JSON , XML , HTML. But JSON popular.
+No Standard for service definition. U can quse Swagger or WADL,  etc
+REST Simply uses Http protocol methods.
+REST would not support MQ way of communication.
+
