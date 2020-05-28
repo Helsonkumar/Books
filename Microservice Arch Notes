@@ -1,5 +1,74 @@
 Microservices Architecture Patterns and Techniques : Udemy
 ==================================================================
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Items to be explored.
+1. Canary Deployment
+2. A/B Testing
+3. Prallel Runs
+4. Blue/Green
+5. Dark Launching
+
+
+
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Microservices nature:
+---------------------------
+Microservice are very difficult to be implemented in product as a big bang.
+Microservice solves the below problems like :
+**Issue with deplying a monolith.
+**Scalability.
+**Agility.Time to market delievery of the new functionality.
+
+Think of a Microservice as a unit of Deployment.
+
+The problem circumventes arounf identifying the proper business boundries. Or modular boundaries.
+
+Even if ur app is modular , but the business ogin is distributed across multiple modules then we end up with ""Modular Monolith" which can always be deployed as single unit.
+
+Distributed Monlith has the operational difficulty and sometimes deployed as single unit.
+
+So a monolith must be disintegrated in an incremental fashion.
+
+Which mean identify a single functionality whihc can be isolated from a monolith and test that in production.
+
+The patterns to be followed in Monolith disintegration into microservices:
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+1.Asset Capture:  Identify the fucntionality to be moved out of monolith
+                  Intercept the call to old functionality and route the call to new microservice.
+2.But M/S would intorduce bid of network hops and latency in the system if the networking is not properly established. Adding proxies in Luxmeberg to hit the service in London :)
+
+3. Branch By Abstraction pattern : 
+    Think of the notification service whihc is a side effect of a parent service exposed to the client.
+	So Create an ""Abstraction Point"" as an interface and provide 2 implementation one with old fucntionality and another with new m/s fucntionality .
+    Route the cleint call to the new and old fucntionality accordingly.
+
+Always think of having the old functionality in the old intact without removing it.
+So this can be reinstated when the new service fails in the production.
+
+Microservice would need lot ot code refactoring.
+
+Think of the diff between Deployment and Release.
+
+Check for Canary deployment, A/B testing ,etc
+
+4. Avoid Sharing Databases.
+   This might exp
+   
+5. Sharing of Data across microservices is a headache.
+   Think of a service need data from another service to be joined.
+   This would result in lot of network hops and would introduce latency in the application since the join operation on multiple tables
+   whihc needs to be pushed to the data layer is now moved to Service layer which is a apin point.
+   This would happen if sepearte DB is defined for each services and they are hidden from other services.
+   
+   
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+The biggest issue in M/S
 Services are  :
 Fine grained and Light weight
 
