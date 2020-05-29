@@ -14,19 +14,26 @@ spring.io/projects
 Controlled navigation
 State Machines
 
-
+Linux:
+-------------
 List the process running on a port: fuser 8081/tcp
 kill -9 process_id
 
+Windows:
+-------------
+resmon.exe
+taskkill /F /PID 5172 ==> run this command prompt as admin
 
 
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 Items to be explored:
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 1. How to filter a request based on the request type before hitting the controller. 
    e.g : Allow only GET request and not POST.
    Simple Solution : Use Interceptors of MVC.
    But for complex requirement : We need to use API management tools. Explore them as well. Do they mean the API Gateway for this???
-2. Explore Interceptors in spring boot.
+2. Explore Interceptors in spring boot. Check how the priority of the exeptions are handled.
 3. Explore Response<enitity>
 4. How to dynamically pass in values for Qualifer filer for our dependencies.
 5. Get familiar with the important HttpStatus Codes. 
@@ -34,7 +41,11 @@ Items to be explored:
 7. How to call another metnod in another controller from a controller.
 8. How many controllers a project can have.
 9. Check what is request redirection.
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+10. HttpURLConnection + HttpServletRequest + HttpServletResponse + HttpStatus + HttpHeaders 
+    RestTemplate + 
+11. What is RequestEntity and ResponseEntity
+12. In the DAO alwayd use the standard convention : like saveUser / createUser / deleteUser
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 
@@ -283,4 +294,30 @@ Used JSON , XML , HTML. But JSON popular.
 No Standard for service definition. U can quse Swagger or WADL,  etc
 REST Simply uses Http protocol methods.
 REST would not support MQ way of communication.
+
+
+Spring Boot :
+===================
+logging.level.org.springframework = debug (runs th app in debug mode)
+
+Displatcher Servlet : This is the major front end controller whihc maps a web requst to sepecific controller.
+This is part of spring MVC.
+
+What is a Servlet :
+---------------------
+Servlet is just a simple Java Class which extends HttpServlet interface.
+This class would contain implementation of the httpservlet method whihc takes HttpRequest and HtttpResponse as parameters.
+So any wen request for a resource say like abc.html would be mapped to a servlet in web.xml file inside the server.
+But these days we use annotations to map the web request to the 
+
+
+How to create a REST Client to consume the service:
+--------------------------------------------------------
+We need to  use RestTemplate(@Bean) class whihc has embedded Jackson binder to bind the Json to POJO and vice versa.
+We need CommandLineRunner(@Bean)  to run the RestTemplate returned.
+
+We can run the application as jar or using the maven command line tool.
+
+**Location : Whihc is part of ResponseEntity items denotes that URL to whihc the request can be redirect a page.
+
 

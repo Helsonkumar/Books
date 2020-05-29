@@ -38,6 +38,7 @@ Which mean identify a single functionality whihc can be isolated from a monolith
 
 The patterns to be followed in Monolith disintegration into microservices:
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
+This an excerpt fromt 
 1.Asset Capture:  Identify the fucntionality to be moved out of monolith
                   Intercept the call to old functionality and route the call to new microservice.
 2.But M/S would intorduce bid of network hops and latency in the system if the networking is not properly established. Adding proxies in Luxmeberg to hit the service in London :)
@@ -291,7 +292,7 @@ which database, server framework, testing tools the candidate chooses
    
 Code	Name	Description
 200	OK	The request has succeeded
-201	Created	The request has succeeded and a new resource has been created
+201	Created	The request has succeeded and a new resource  been created
 204	No Content	There is no content to send for this request
 301	Moved Permanently	the URI of the requested resource has been changed permanently
 302	Found	The URI of requested resource has been changed temporarily
