@@ -1,9 +1,20 @@
 Design Patterns Notes:
 =================================
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Things to be explored:
+--------------------------
+1. Java Recursive Generics(from flunet interface of bulder design pattern)
+2. When to use casting and how it works.
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+
 ##########################################################################################################################
 SOLID Principles:
 ##########################################################################################################################
-
 SRP : Single Responsibility Principles
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Always create a class with only one responsibility. This makes Ur code or class to be easily managed.
@@ -65,4 +76,7 @@ Motivation :
 To construct an object piebce by piece. 
 Think of StringBuilder to construct a String with "N" arguments.
 
+Trcikies part:
+--------------------
+Fluent interface. Calling method on the returned object fluently.
 

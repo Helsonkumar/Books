@@ -27,7 +27,7 @@ Alogrithms used by LB:
 1. Round Robin
 2. LeastConnection : Server with less active connection and high resource availability and servers with high repsonse time
 3. Hash : Where client IP address or requets URL is hashed and the client request is served with the specific server among the set of server.
-4. Random pick of 2 : Pick any 2 servers randomly and use the elast connalgorithm to derive the best server to serve clients request.
+4. Random pick of 2 : Pick any 2 servers randomly and use the least connection algorithm to derive the best server to serve clients request.
 
 
 ######################################################################################################################################################################################################################################################
@@ -51,11 +51,105 @@ In those cases horizontal scaling becomes more challenging.
 
 ######################################################################################################################################################################################################################################################
 
+Load Balancer:
+-------------------
+1. Enhances user response time
+2. Increases application uptime
+3. Does the SSL offload like decrypting the SSL user request and off loading that task from the app servers.
+4. Redundancy  : Does the failover switching task like when a server dies it handover the task to other server.
+5. Flexibility : IN server maintanance. Since the traffic is routed to other serves.
+6. Scalability : A new server can be added and the LB recognizes it as soon as it is added without downtime.
+
+LB must do the hearbeat health check of the backend servers.
 
 
-The following service(s) have been created in your project: redis.
+Application load balancer:
+------------------------------
+Developers code listeners which reacts to sepcific events and route the request to the specific target based on the content of the web request.
 
-       Password: redis_password
- Connection URL: redis://redis:6379/
+Hardware vs. software load balancing:
 
-For more information about using this template, including OpenShift considerations, see https://github.com/sclorg/redis-container/blob/master/3.2 .
+H/W LB:
+--------
+H/W LB direct traffic to servers based on criteria like the number of existing connections to a server, processor utilization, and server performance.
+Hardware load balancers include proprietary firmware that requires maintenance. They come in the form of device with preinstalled or prebuilt LB S/W.
+Less flexible
+
+
+S/W LB:
+--------
+Highly flexible.
+They come in the form of S/W installed in VM or installable S/W.
+They also come in the form of LBaaS from cloud vendors off loading the maintanance.
+
+LB Algorithms:
+-------------------
+Algorithms vary and take into account whether traffic is being routed on the network or the application layer.
+Load balancing algorithms fall into two main categories—weighted and non-weighted. 
+Weighted algorithms use a calculation based on weight, or preference, to make the decision (e.g., servers with more weight receive more traffic).
+Non-weighted algorithms make no such distinctions, instead of assuming that all servers have the same capacity.
+
+LB Methods:
+--------------------------------
+Round Robin          :
+
+Weighted Round Robin :   With this method, each server is assigned a weight (or preference), usually commensurate with its capacity.
+
+Sticky Session       :   This method links specific clients and servers for the duration of a session.
+                         Once the link is established, all requests from the user are sent to the same server until the session is over.
+						 
+Least Connections    :   The server handling the lowest number of requests receives the next request that comes in.
+
+IP Hash              :    This algorithm creates a unique hash key based on both the source and destination IP address of the client and the server.
+                          The key is used to route the request and enables a dropped connection to be reestablished with the same server.
+
+LB on Cloud env is similar to the classical or general LB.
+
+Clustering vs LB
+---------------------
+IN cluster ech server is aware of each other.
+In LB each node is not aware of each other.
+
+Open source LB:
+------------------
+Always check for the compatibility of the LB with its backend server.
+
+LB can be done in Database level as well : Do check for thsi LB. DB LB can maintain the data integrity in a DB txn.
+
+
+Layer 4 and Layer 7 LB:
+-----------------------------------------------
+Layer 7 : Application Layer:  HTTP Layer
+http hearde , cookies, content-type
+-----------------------------------------------
+Pros : 
+Smart Load balancing since it can route the request based on the data on the request header.
+Good for M/S/W
+Caching since it can look at data.
+It can offload server side data encryption.
+
+
+Cons:
+Expensive(since it looks at data).
+2 TCP connection.It looks at Ur data.
+Less secure since data is present.
+
+
+
+-----------------------------------------------
+Layer 4 : Transport Layer : TCP Layer 
+-----------------------------------------------
+We know the ports and IP alone in this layer.
+Does not have access to Data
+Does the routing based on the IP address of the client.
+One TCP connection.
+NO encrytpion of decryption of the user data.
+
+Pros:
+Simple LB.Efficient . Since no data is looked up for routing.
+More Secure. Since data is in the form of packets.
+One TCP connection between destination and the source.
+
+
+ALL LB happens via the NAT(Network ADdress Translator).
+

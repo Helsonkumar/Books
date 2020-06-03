@@ -41,10 +41,17 @@ Items to be explored:
 7. How to call another metnod in another controller from a controller.
 8. How many controllers a project can have.
 9. Check what is request redirection.
+
 10. HttpURLConnection + HttpServletRequest + HttpServletResponse + HttpStatus + HttpHeaders 
-    RestTemplate + 
+    RestTemplate +   ResponseEntityExceptionHandler(Check how each methods can be applied)
+	ResquestHeader ==> Check for what are all the possible items can be set via @RequestHeader.
+	
 11. What is RequestEntity and ResponseEntity
 12. In the DAO alwayd use the standard convention : like saveUser / createUser / deleteUser
+13. Check how to create custom annotation for Spring Validation.
+14. Check for the advance usage of HATEOS.
+15. Check for internationlization and advanced features of Spring Boot.
+
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
@@ -321,3 +328,46 @@ We can run the application as jar or using the maven command line tool.
 **Location : Whihc is part of ResponseEntity items denotes that URL to whihc the request can be redirect a page.
 
 
+ExceptionHanlding in Spring bOot:
+-------------------------------------
+Ensure Ur custom error message of the type runtime exception.
+@ExceptionHandler(Exc.class) ==> for methods which handles the specific exception.
+
+
+Bean Validation:
+--------------------------
+There are three things we can validate for any incoming HTTP request:
+
+the request body,
+variables within the path (e.g. id in /foos/{id}) and,
+query parameters.
+
+
+@Valid(validates the request body)
+Handled by validation-api.jar in the dependency.
+The ResponseEntityExceptionHandler has lots of methods to handle various exception nature.
+
+
+HATEOS : Hypermedia As The Engine Of Application:
+-----------------------------------------------------
+Instead of just sending the response like User alone to the clinet,
+we can send the HyperLink of the other resources like (/getall/Users) to the Client
+This is done via HATEOS Resources.
+
+For XML support : Add a jckson xml dependcy jar and change the accept-content type as XML in the HEADER of the http request.
+
+Swagger : add some swagger2 dependency and swagger-UI dependency.
+localhost:8080/v2/api-docs
+loclahost:8080/swagger-ui.html
+
+Static Filtering : To filter the response from the server.
+@JsonIgnore : to the field whihc U ont want to see in the response.
+
+
+Dynamic Filtering : Ignoring fields based on the request.
+But we need to configure this in the @RestController.
+We need to provision with Mapping Filters.
+
+
+API Versioning:
+-----------------------                   
