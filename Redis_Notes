@@ -1,2 +1,43 @@
 Redis Notes:
 ====================
+Redis can have keys in any form : It is Binary Safe 
+Value would be String by default.
+We SET / GET  the keys.
+nil -: if the key is not set to nay value or key is not present.
+We set the Time to Live  (TTL) for the keys.
+or persist them permenently.
+512MB can be the maximum size of a key.
+KEYS or SCAN  : to get the list of keys
+KEYS : Blocks
+SCAN : Scan the keys in slots.
+
+DEL or UNLINK a key from memory.
+
+By default every values appear as "String".
+The Encoded data type of the value is checked before manipulation that value for a key.
+
+================================================================================================================================================================
+
+Hashes : (Hash_Name : Field1 -> val1 , Field2 -> val2 , Field3 -> val3)
+------------------------------------------------------------------------------
+hset Hash_Name new_Field1 new_val
+hget Hash_Name new_Field1
+
+hmset / hmget  : for multiple field retrive.
+
+if a field does not exists then we get  : nil
+
+Hashes cannot hold any nested collection data type as value. Only string can be stored.
+
+Use case : Session storage (instead BLOB store it as k-v pairs)
+           Rate Limiting of Web services(counter to track the number of times the service has been hit)
+		  
+		  
+		  
+List : Implemented as Doubly Linked List
+------------------------------------------------------------------------------
+So elements can be added LEFT or RIGHT to the list.
+LPUSH , LPOP , RPUSH , RPOP,etc
+Check of the commands.
+
+
