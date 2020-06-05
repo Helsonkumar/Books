@@ -45,12 +45,15 @@ Items to be explored:
 10. HttpURLConnection + HttpServletRequest + HttpServletResponse + HttpStatus + HttpHeaders 
     RestTemplate +   ResponseEntityExceptionHandler(Check how each methods can be applied)
 	ResquestHeader ==> Check for what are all the possible items can be set via @RequestHeader.
+	HttpClient (check this from Baeldung)
 	
 11. What is RequestEntity and ResponseEntity
 12. In the DAO alwayd use the standard convention : like saveUser / createUser / deleteUser
 13. Check how to create custom annotation for Spring Validation.
 14. Check for the advance usage of HATEOS.
 15. Check for internationlization and advanced features of Spring Boot.
+16. Etag Workflow.
+17. Caching Startegies in API design
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -370,4 +373,48 @@ We need to provision with Mapping Filters.
 
 
 API Versioning:
------------------------                   
+-----------------------         
+One of the major challenges surrounding exposing services is handling updates to the API contract. 
+Clients may not want to update their applications when the API changes, so a versioning strategy becomes crucial. 
+A versioning strategy allows clients to continue using the existing REST API and migrate their applications to the newer API when they are ready.    
+
+Versioning is a crucial part of API design. 
+It gives developers the ability to improve their API without breaking the client’s applications when new updates are rolled out.     
+
+1. URI versioning            : Using diff URI for diff versions.
+2. Request Params versioning : Use request params in teh URI for diff versions.
+3. Header versioning         : Use argument in the header to identify the versions. --> makes less clutter in the URI name space since we use headers to indetify the correct version.
+4. Content type versioning   :        
+     This approach allows us to version a single resource representation instead of versioning the entire API which gives us a more granular control over versioning. 
+	 It also creates a smaller footprint in the code base as we don’t have to fork the entire application when creating a new version. 
+	 Another advantage of this approach is that it doesn’t require implementing URI routing rules introduced by versioning through the URI path.
+	 Requiring HTTP headers with media types makes it more difficult to test and explore the API using a browser.
+	
+	
+1 and 2 makes the URIL more cluttered. Easy to implement. But need refactoring of API contract due to breaking changes in the URI.
+Content negotiation is a more granular approach because it versions resource representations instead of versioning the entire API
+	 
+Next, let's consider the types of changes to the REST API – these are introduced here:
+representation format changes : Media Type : That mean the format of the Json changes: Adding or Removing fields. The JSON in the "MEDIA TYPE".
+                                This is not a breaking changes to the client. Adding new fields to the JSON repsonse would not impact the existing client. JSON would do it better.
+								
+								
+resource changes  : URI Changes :Breaking changes to client.
+
+BREAKING vs NON-BREAKING CHANGES:
+--------------------------------------
+Possible Changes to the API : 
+representation format changes
+resource changes
+
+
+1.Adding to the Representation of a Resource ("additive" change )    : Adding a new field to the current JSON file. Is not breaking changes since client can ignore the unwanted field.
+2.Removing or Changing an Existing Representation : This is a breaking change to the client.This is where we get Content-negotiation. The URI remains the same but the content       
+                                                     or the media types(JSON response) differs.
+													 Cleint will have to understand the bew semantics.
+3. Major Semantic Changes                         : These are changes in the meaning of the Resources, the relations between them or what the map to in the backend.
+                                                    This kind of changes may require a new media type or they may require publishing a new, sibling Resource next to the old one and making use of linking to point to it.	
+https://www.bennadel.com/blog/3501-when-is-a-change-a-breaking-change-for-an-api.htm
+
+
+													
