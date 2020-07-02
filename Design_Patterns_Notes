@@ -70,13 +70,45 @@ Gamma Categorization
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Creational Pattern :
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------d
+****************************************************************************************************************************************************************
 Builder Design Pattern:
-============================
+****************************************************************************************************************************************************************
 Motivation :
 To construct an object piebce by piece. 
 Think of StringBuilder to construct a String with "N" arguments.
 
-Trcikies part:
+Trickiest part:
 --------------------
 Fluent interface. Calling method on the returned object fluently.
+
+pros:
+--------
+Use it when an object must be constructed with lot of parameters. We handover the object creation to another object or static class within the same object to be constructed
+the task of creating that object.
+
+Recursive Generics:
+---------------------
+Builder inhert another builder scenario.
+When a Object like Person must be constructed by 2 Builders. And Each builder must preseve the fucntionality of one another.
+Problem here is to preserve the fluent interface across the inheritence hierarchy.
+So we need to use "Recursive Generics".
+
+PersonBuilder< T extends PersonBuilder<T>>.
+EmployeeBuilder extends PersonBuilder<EmployeeBuilder>
+
+This way we can preserve the fluent interface across inheritence hierarchy.
+
+FacetedBuilder : 
+--------------------
+Multiple builder under a common Primary builder.
+
+
+
+
+****************************************************************************************************************************************************************
+Factory  Pattern:
+****************************************************************************************************************************************************************
+
+
+
 

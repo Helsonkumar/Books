@@ -1,0 +1,188 @@
+Stream Processing Notes:
+===================================================
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Items to be explored:
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1.What is Data Coverage
+2. DataStreamReader  + SparkSession
+3. org.apache.spark.sql.expressions.scalalang.typed
+4. mapGroupsWithState  + flatMapGroupsWithState 
+5. StreamingQuery  object : this is te handle to the Streaming Query.
+6. readStream() amd writeStream()  ==> Are the 2 interfaces used to read and write the stream dataframes respectively
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+C:\Users\DELL\Netcat>nc64.exe -nlvp 4444
+spark-submit --class com.spark.streaming.examples.StructuredStreaming SparkStreamingExamples-1.0-SNAPSHOT.jar
+
+
+From the Linkedin Blog on Logs:
+
+Usage of Logs:
+------------------------------------------------------------------------
+1. Data Integration :
+========================================================================
+Problem: Absence of reliable data flow.
+
+Data Integration: Two complications
+1. Fire hose of event data. THis has made it complex to process this huge volume of quick data.
+2. Evolution of specialized data processing tools .This has greatly created confusion and maintanance issues.
+
+Collectiing data from many deseperate sources is challenging.
+This has infact lead us creating more data pipelines for each source systems which is hard to maintain.
+So a centralized log where all source systems would drop their data and rest of the consumers would just pick it up Asynchronously.
+
+So the question is : Where to place the login of data transofmration for the curated data to be used by the consumes.
+1. To be at the producer side
+2. At the log itself
+3. At the consumer side or not.
+
+##############################################################################################################################################################################################################################################################################################
+Describes what processing must be done by which layer:
+##############################################################################################################################################################################################################################################################################################
+The best model is to have cleanup done prior to publishing the data to the log by the publisher of the data. 
+This means ensuring the data is in a canonical form and doesn't retain any hold-overs from the particular code that produced it or the storage system in which it may have been maintained. 
+These details are best handled by the team that creates the data since they know the most about their own data. 
+
+Any kind of value-added transformation that can be done in real-time should be done as post-processing on the raw log feed produced.
+This would include things like sessionization of event data, or the addition of other derived fields that are of general interest.
+The original log is still available, but this real-time processing produces a derived log containing augmented data.
+
+Finally, only aggregation that is specific to the destination system should be performed as part of the loading process. 
+This might include transforming data into a particular star or snowflake schema for analysis and reporting in a data warehouse.
+Because this stage, which most naturally maps to the traditional ETL process, is now done on a far cleaner and more uniform set of streams, it should be much simplified.
+
+
+##############################################################################################################################################################################################################################################################################################
+it enables decoupled, event-driven systems.
+
+
+##############################################################################################################################################################################################################################################################################################
+Structured Streaaming Notes:
+Here consider the stream of records as the records appended to an unbounded table. ==> Input Table
+We transform and run query on top of this unounded table  ==> Result Table
+We display or persist this result table ==> Output table
+
+Spark Streaming engine(SS) runs the incremental query on top of the input table to create a new Output table when even a new record is appended to the input table.
+
+Modes : Complete  / Append / Update ==> The way how the ifo must be display on the Output sink . The sink talk to Result table and nt the input table.
+
+How Fault Tolerant is achieved:
+--------------------------------
+SS engine uses checkpointing and the Write A head log to keep track of the state of the records processed so far.
+
+Streming Source (assumed to have offsets management t be replayable)  ====> Streaming Engine(WAL + Checkpointing) ====> Sink (Idempotent)
+
+So even under the condition of resatrt the same record is not reprocessed again.
+
+For each batch  : The new Output table is created and the same must be handled by the sink.
+
+Struct Streaming is well suited for event time based processing use cases.
+
+DataStreamReader  is used to read the stream of data.
+
+Types of Sources supported:
+==============================
+We need to always ensure that a source provides a fault tolerant feature or not.
+FT is achieved if the source is replayable by using offsets like Kafka.
+
+File source - Reads files written in a directory as a stream of data.
+Kafka source - Reads data from Kafka. 
+Socket source (for testing)
+Rate source (for testing) 
+
+df.select(col_name1).where(col_name2 > 10) ==> These are jut the SQl whih are not typed
+ds.filter(_.col_name2 > 10).map(_.col_name1) ==> There are typed APIs.
+
+df.isStreaming : checks if the df is Streaming df or not.
+
+Windowing based on the event time:
+-------------------------------------
+val windowedCounts = words.groupBy(
+  window($"timestamp", "10 minutes", "5 minutes"),
+  $"word"
+).count()
+
+10 min  : window
+5 min   : Sliding time
+
+
+
+With Watermarking in Windowd Group aggregaton:
+====================================================
+val windowedCounts = words
+    .withWatermark("timestamp", "10 minutes")
+    .groupBy(
+        window($"timestamp", "10 minutes", "5 minutes"),
+        $"word")
+    .count()
+	
+Conditions for watermarking to clean aggregation state
+It is important to note that the following conditions must be satisfied for the watermarking to clean the state in aggregation queries (as of Spark 2.1.1, subject to change in the future).
+
+Output mode must be Append or Update. Complete mode requires all aggregate data to be preserved, and hence cannot use watermarking to drop intermediate state. See the Output Modes section for detailed explanation of the semantics of each output mode.
+
+The aggregation must have either the event-time column, or a window on the event-time column.
+
+withWatermark must be called on the same column as the timestamp column used in the aggregate. For example, df.withWatermark("time", "1 min").groupBy("time2").count() is invalid in Append output mode, as watermark is defined on a different column from the aggregation column.
+
+withWatermark must be called before the aggregation for the watermark details to be used. For example, df.groupBy("time").count().withWatermark("time", "1 min") is invalid in Append output mode
+
+More delayed is the data, less likely is the engine going to process it.
+
+
+Water marking ensure that a late even arrival would be processed if it is within the watermark window.
+But tis may or may not drop the records if the event is outside the watermarking window.
+
+impressionsWithWatermark.join(
+  clicksWithWatermark,
+  expr("""
+    clickAdId = impressionAdId AND
+    clickTime >= impressionTime AND
+    clickTime <= impressionTime + interval 1 hour
+    """),
+  joinType = "leftOuter"      // can be "inner", "leftOuter", "rightOuter"
+ )
+ 
+ 
+The watermark window of both th streams in the join condition must be considered.
+But it is actually inclined towards the slowest of both the watermarking.
+This is called as "Global Watermarking"
+
+
+========================================================================================================
+                    How to track the events created for the past one hour
+1. How often the result must be displayed to the client ==> This decides the sliding window.
+2. What is the time period ==> "past one hour" ==> This decides the window slot
+3. What is the query to be applied on the data ==> This is core heart for any streaming app
+
+=========================================================================================================
+
+Output Sinks: Each sink supports diff cmbination of output modes.
+--------------------------------------------------------------------
+File sink 
+Kafka sink
+Foreach sink
+Console sink (for debugging) 
+Memory sink (for debugging)
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+
+Receiver ==> RDD(batch 1) + RDD(batch 2) ...... RDD(batch N)
+DStreeams is an abstraction on top of the RDD.So u can operate on top of that Dstream as a normal RDD or u can even access the underlaying RDDs.
+
+The number of records within RDD is decided by the batch interval we pass for Stream Context.
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+##############################################################################################################################################################################################################################################################################################
+
+
+
+
+

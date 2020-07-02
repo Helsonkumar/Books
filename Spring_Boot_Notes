@@ -417,4 +417,26 @@ resource changes
 https://www.bennadel.com/blog/3501-when-is-a-change-a-breaking-change-for-an-api.htm
 
 
-													
+		
+============================================================================================================================================================================
+Spring Reference :
+
+Spring Core Annotations:
+---------------------------
+@Autowired : Can be used at Cnstructor , Setter , field level
+@Qualifier 
+@Bean (method annoatation)
+@Required : If U need some property from the container (property name = "color"  value="blue")
+        @Required
+          void setColor(String color) {
+             this.color = color;
+            }  
+			
+@Value (in the seeter 			
+
+
+
+
+
+
+	

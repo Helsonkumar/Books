@@ -39,5 +39,17 @@ List : Implemented as Doubly Linked List
 So elements can be added LEFT or RIGHT to the list.
 LPUSH , LPOP , RPUSH , RPOP,etc
 Check of the commands.
+e.g : rpush list-two a b c d
+
+
+
+Sets: Unique collection of String unordered:
+----------------------------------------------------
+Diff , Intersect , Union.
+
+
+Sorted Set : Elements added with Scores  : zdd ref score1 val1 score2 val2
+Elements have their own RANK and SCORE.
+Can be used to implement "Priority Queue" + Leader Board
 
 

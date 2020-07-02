@@ -153,3 +153,14 @@ One TCP connection between destination and the source.
 
 ALL LB happens via the NAT(Network ADdress Translator).
 
+######################################################################################################################################################################################################################################################
+CQRS  Pattern  : Command Query Responsibility Pattern :
+----------------------------------------------------------
+We seggregate the Read and Write Model. Since both of them would need diff representation of the data.
+This would avoid the conjetion and data lock of the resources while data read and write.
+Effective Scaling of each read and write models.
+CQRS : Event sourcing :
+UPdate records are dripped in the form of events in to the kafqka Queue and the read model play the events and update the state of the read Db using those events.
+
+
+

@@ -203,7 +203,7 @@ We can make this large so the broker would send the messages as soon as this lim
 
 9. Consumer offset commit strategy :
 ---------------------------------------
-HOw the consumer commits the offsets when the message is consumed
+How the consumer commits the offsets when the message is consumed
 """enable.auto.commit = true""" (offsets are auto commited. Synchronous processing of batches.ie no new batches would be polled(fetched) untill we procesess the current one)
 
 So u poll the record into record batches and do something Synchronous.So no new batches would be polled unlsess we process the existing batch.
@@ -269,11 +269,6 @@ In BigData processing  : Consumer might take long time to process the data. In t
 The maximum amount if time between 2 poll request. If this time is execeed then the broker would kill that consumer from the gropu and rebalances the partition
 So always check for this config or increase it if the consumer processing would take a long time to process data.
 
-
-
-
-
-
 ==============================================================================================================================================================================================================================================================
 Notes Kafka Avro Schema Registry training:
 ------------------------------------------------------
@@ -324,7 +319,7 @@ There can be only version of a Schema at a time. Rest would be the old version.
 
 Forward Compatible :  Adding a new field without default to a record (this is V2 Schema). We can use Old Schema to read the old and new Data . SO this Change is """Forward Compatible""".
 
-Backward Compatible : Removing an existing field which does not have default (This is V2 Schema). We can use new data to read the old and new data. So this Change is """Backward Comaptible""".
+Backward Compatible : Removing an existing field which does not have default (This is V2 Schema). We can use new schema to read the old and new data. So this Change is """Backward Comaptible""".
 
 Fully Compatible : Adding or removing fields with Defaults make ur change """Fully Compatible""".
 
@@ -332,7 +327,73 @@ Non Compatible Schema Changes:
 ===============================
 Adding new symbols or removing existing symbols to the enum is treated as non-compatible.
 Changing the type of a field. (String  => Int)
-Renaming a field whihc doe snot have default 
+Renaming a field which does not have default 
+
+
+
+These are the modifications you can safely perform to your schema without any concerns:
+=============================================================================================
+A field with a default value is added.
+
+A field that was previously defined with a default value is removed.
+
+A field's doc attribute is changed, added or removed.
+
+A field's order attribute is changed, added or removed.
+
+A field's default value is added, or changed.
+
+Field or type aliases are added, or removed.
+
+A non-union type may be changed to a union that contains only the original type, or vice-versa.
+
+
+
+Rules for Changing Schema :
+===============================
+There are a few rules you need to remember if you are modifying schema that is already in use in your store:
+
+For best results, always provide a default value for the fields in your schema. This makes it possible to delete fields later on if you decide it is necessary. If you do not provide a default value for a field, you cannot delete that field from your schema.
+
+You cannot change a field's data type. If you have decided that a field should be some data type other than what it was originally created using, then add a whole new field to your schema that uses the appropriate data type.
+
+When adding a field to your schema, you must provide a default value for the field.
+
+You cannot rename an existing field. However, if you want to access the field by some name other than what it was originally created using, add and use aliases for the field.
+
+
+Schema evolution is applied only during deserialization. 
+If the reader schema is different from the value's writer schema, then the value is automatically modified during deserialization to conform to the reader schema. To do this, default values are used.
+
+There are two cases to consider when using schema evolution: when you add a field and when you delete a field. 
+Schema evolution takes care of both scenarios, so long as you originally assigned default values to the fields that were deleted, and assigned default values to the fields that were added.
+
+
+Think of Scenario like Client with v1 schema and Client with v2 schema.
+
+In avro the schema is embedded in the Store value.
+
+
+
+Possible errors are:
+================================
+A field is added without a default value.
+
+The size of a fixed type is changed.
+
+An enum symbol is removed.
+
+A union type is removed or, equivalently, a union type is changed to a non-union type and the new type is not the sole type in the old union.
+
+A change to a field's type (specifically to a different type name) is considered an error except when it is a type promotion, as defined by the Avro spec.
+And even a type promotion is a warning; see below. Another exception is changing from a non-union to a union; see below.
+
+Type promotion :
+----------------------
+A field's type is promoted, as defined by the Avro spec. Type promotions are: int to long, float or double; long to float or double; float to double.
+Else add a new field with new type altogether.
+
+
 
 Guidelines for Schema evolution:
 ==================================
@@ -362,3 +423,14 @@ http://192.168.99.100:3030/
 2181 : ZooKeeper
 9585 : JMX
 3030 : Web Server
+
+
+
+Schema Registry and REST Proxy :
+========================================
+Schema Registry : Used to store the Schema of the Avro data written to the Kafka Cluster.
+The S.R hodls the Schema for the avro data and it is used to serialze and deserialize the avro data into the Kafka Cluster.
+
+
+
+
