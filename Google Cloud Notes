@@ -1,0 +1,187 @@
+Building Scalable Systems:
+=========================================================
+All systems are evntually consistent.
+
+Performance has limit
+Scalability has no limits.
+
+Eventul consistency : If no updates then all part of the system would be eventually consistent.
+Types: Consual Consistent , Strong Consistent , Sequential Consistent
+
+All systems are eventual consistent in natre . Think of GitHub code locks.
+
+Using locks would help us achieve Strong Consistency. Think of Single Db accessed by amny parts of the system.
+But lock adds more overhead like contention.
+Strogn consistency is all about diff parts of the system responding with the same answer if ased at any time.
+All parts must agree upon the state and respond with answer like group of Jury.
+Strong consistency mean we dont wnat to have STALE DATA.
+
+Contention :  Diff parts of system contending for a shared resource like DB record,this would lead toa state where more the load is , higher the time taken to release the resource.
+
+
+Consistency and Availability cannot co-exist.
+
+Law of Scalabilty:
+=====================
+Amdahl's Law : Contention Limits parallelization. Depicts the relation between Concurrenty and Throughput of the system.
+
+Defines the limits of parallelization.
+Piece of code we can do nothing about is the one whihc holds contention and which cannot be parallelized.
+
+
+Coherency Delay :
+======================
+Think of meeting scheduling scenarios.
+
+**** Concurrency Vs Throughput ****
+
+Gunther's Law of Coherency Delay :
+-----------------------------------
+Accounts for Contention + Coherency Delay.
+
+State of Coherence : Can be achieved by having members of the system agreeing upon the state change of each other. 
+                     But this would result in a delay.This is called Coherency delay.
+					 
+Gunther's Law states that increasing concurrency can result in negative result due to Coherency Delay + Contention.
+
+Linear Scalability is almost not achievable : Considering the communication and Contention and Coherence verhead between the parts of the system.
+
+Stateless : Cannot be achived. Sharing state between parts of system losses the ability of Linear Scalability.
+
+
+How Reactive System / Microservice enhances Scalability :
+===========================================================
+Avoids Contention by :
+    Isolating Locks,Elimates Txn , Avoids Blocking operation.
+	
+Avoids Coherency-Delay by :
+    Embracing eventual consistency 
+	Building Autonomy ==> Systems which do not have to interact
+	
+This simply reduces them and not avoids them.
+
+
+CAP Theorem:
+===============================================================
+Consistency Availability Partition Tolerance
+
+CA side is not a valid in kost cases....either CP or AP is possible..
+
+Partition tolerance : When part of the system goes  down and unable to commnicate with each other the system still remains respnsive.
+Partition does not mean the data partition. It means the node or system unvailability scenario.
+
+Dealing with Partition : Making the system to remain responsive even under the case of drop of n/w comm
+============================================================================================================
+1. CP : Dropping the system which has gone down. So we write to one node and have that for read as well. Here the consistency is achived but if that single node goes down then we loss availability.
+2. AP : Start writing on both the nodes. Here availability is achived , but consistency of data is achived since the data on both nodes would remain inconsistent.We will have to merge data after partition is resolved.
+
+In reality, most systems balance the Consistency & Availability concerns usually favoring one side or the
+other.
+
+By doing all reads and writes through a single master node, we can guarantee: Consistency
+When we failover to a replica, we are sacrificing: Consistency
+
+By allowing reads and writes to go to any single database node, this system is favouring: Availability
+Think of writig to all replicas before txn completes.... : Here we compromise availability...
+
+
+Contention Vs Scalability:
+============================
+Consistency creates contention.
+Contention will result in demnishing result in Scalability
+
+Isolating  Contention :
+============================
+In Reactive Apps Shardign at APP level ;; Not the Db level
+Record level locking instead of table level locking.
+
+To provide scalability, while maintaining Consistency we look to: Isolate resource of contention
+
+Sharding for Consistency : Provides Strong consistency
+----------------------------------------------------------
+Nodes has many Shards  ==> A Shard consist of many Entities.
+
+
+A shard cannot exist in more than one node.
+An entity cannot locate in more than one shard.
+
+Query for an entitiy is decided by entity ID.
+We use HashCode algo on entity ID to decide the shard to which that entity belongs.
+Choosing correct enity ID is very important.
+
+Sharding at the application level provides which of the following benefits:
+----------------------------------------------------------------------------
+Here even if the Db does not supports sharding we can still do sharding at app level.
+Reduced comm between App and DB.
+Strong Consistency
+Improved Scalability.
+
+We can describe Sharding by saying that: Sharding partitions(Nodes) entities or actors in the domain according to their unique Id. correct
+
+Sharding Co-ordinator will ensure proper routing of the Entity request.
+
+Thumb Rule is to get 10 Shards in a Node.
+
+Effects of Sharding:
+------------------------
+Sharding isolates the contention to specific entities. The entities decides the contention boundry.
+In a Sharded system, Strong Consistency is achieved by: Isolating operations to a specific entity, which processes one message/request  at a time
+
+Sharding , Consistency , Scalability :
+---------------------------------------
+1. Scalability is acheived by distributing shards across nodes.
+2. Strong Consistency is acheived by isolating operation to specific entities.
+3. Careful choice of shard keys is imp to maintain good scalability.
+4. Sharding help reducing Contention. It does not eliminates it though.
+5. Sharding is a CP solution so it sacrifies Availability.
+
+Caching with Shards ;
+----------------------------
+Consistent image of data is cache and Db is essesntial.
+So we update DB and write the same to Cache.
+This makes we barely use DB for reading. We use that only for writitng.
+Since most of the apps are read heavy,,this optimizes the app to greater extent.
+
+
+Availaility and Scalability:
+------------------------------
+CRDT : Conflict Free Replicated DataTypes
+
+
+CRDTs for Availabiity : At App level
+----------------------------------------
+CvRDT and CmRDT
+CvRDT is widely supported.
+
+CvRDT : Ensures High Availability and Eventual Consistency
+
+With CRDTs write happns in all nodes or replicas. And eventually merged to the final State.
+
+Merge operation must be Commutative , Associative , Idempotent(Duplicate processign should not impact our result).
+
+You can create custom CRDTs as long as you can define a merge operation.
+
+
+Effects of CRDTs;
+=====================
+Map , Set , Conts can be used for CRDT...Tombstone(marker to denote deleted data : This increases the CRDT size)
+
+Dist Data is primarily an availability Solution which is Eventually Consistent.
+Note : We mean Dist Data , not Dist System
+
+Read/Write Consistency in Distributed Data allows you to: Tune your solution towards Consistency, but away from Availability.
+
+
+Consistency or Availability:
+------------------------------
+CAP Theorem forces us to have either Consistency or Availability :
+Choise must be made at Business Level not at technical level
+
+Factor out with Doamin experts on : Unavailable vs Eventual Consistent.
+
+Within the same application or system, we sometimes need consistency, and other times need availability, depending on the use case.
+
+
+************************************************************************************************************************************************************************************************************************************
+************************************************************************************************************************************************************************************************************************************
+************************************************************************************************************************************************************************************************************************************
