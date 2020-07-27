@@ -1,0 +1,93 @@
+Spring Security : 22-07-2020
+=================================
+
+netstat -ano | findstr :8080
+taskkill /PID 23508 /F
+
+handled with lots of pre configured filteres.
+
+Delegate Filter proxy ==> Filetr-chain proxy ==> Filter chain (We have list of them)
+
+Authentication process:
+Principal : Is the User or the FID which needs access to a resosurce.
+Authentication Manager : Does all authentication steps.
+Creates an authentication object and adds the prinicpal and Authorization object to the Security-Context object and futher adds that to HttpSession.
+
+Principal + Authorization ==> Authentication Object  ==> Security-Context ==> Session
+
+Security-Context object is created when the user tries access the resource.
+
+We have form-based, basic, Digest , types of authentication.
+
+
+CSRF : Cross Site Request Forgerry
+
+
+
+
+
+OAuth2.0 :
+=========================
+Protocol to let User to permit a client(like Quora) to access resource from another site(like Google) with limited Authorization or Access without exposing the complete credentials to Clinet(Quora).
+In other words, to let another client to access your resource without exposing your credentials to that cleint.
+
+In simple terms  : OAuth is meant ofr Authorization and not for Authentication.
+it is a protocol to allow 2 service  in a network to trust each other and work.
+
+E.q  : valet parking key with limited access
+
+
+Grant Types Under OAuth:
+-------------------------
+1. Authorization Code Grant
+2. Client Credentials Grant 
+3. Resource Owner Password Grant
+4. Implicit Grant
+
+
+Authorization Code Grant : 
+-----------------------------
+Consider the example of Quora with Google Login
+
+Quora is registered client with Google. o Quora has Client Id and Client Secret
+
+Parties involved  : Resource + Resource Owner (user)   +  Resource Server (Google server) +  Client (App which makes request to protected resource on behalf of Resource owner) + Auth Server(Google Auth Server)
+
+The Resource server must implement or coupled with the Auth.Server. Bcz Res.Server must ensure security.
+
+1. Quora ask for Login with Google (Auth Server)
+2. It(Auth server) redirects to google login page
+3. User types the Uid and Pwd.
+   Google asks for Users concent for the scopes granted to the quora client. User decides yes or no for that.
+4. Google AUTH Server grants quora with """AUTH-CODE""" with  the redirect link
+5. Quora request for Access token, so it submits the AUth code + client id and client credentials to auth server. Then quora submits that to Resource server.
+6. Resource server validates the Access token for the actual resource sought and serves the requested resource.
+7. Quora access the user profile details from google resource server.
+
+Access Token  : Must be in a format which cannot be tampered. This is Called JWT (Java Web Token)
+
+
+
+Client Credentials Token :
+-------------------------------
+Used for interaction between apps to apps.
+E.q Helson-app trying to access service exposed by Book-my-show app.
+Here  there is nothing like resource owner. Bcz the resource is not owned by any end user. Instead the theatre seat reservation details are owned by Book-my-show system
+For REST-APi to REST-APi interaction we use Client-Credentials-grant type. Since the parties involved are highly trusted. So use that for inter service comm. No external world contact.
+Helson app must be a valid an resgistered app with Book my show system .
+Helson-app gets the access token from book-my-show app(Auth Server) by providing it Client-ID and Secret.
+
+
+
+Resource Owner Pwd grant type:
+---------------------------------
+Think of End user trying to access his user details from an app. The resource owner is the end user here.
+By providing the Uid and Pwd to the app, the app inturn interacts with the Auth server with the given Uid and Pwd alone .
+So the auth sever grants the client app the auth token to access the user details.
+
+
+
+Implicit Grant :
+----------------------------------
+Used mostly by the Java Script apps.
+Similar to Auth-code-grant type , but 

@@ -182,6 +182,73 @@ Factor out with Doamin experts on : Unavailable vs Eventual Consistent.
 Within the same application or system, we sometimes need consistency, and other times need availability, depending on the use case.
 
 
+
+
+CQRS Pattern :
+=======================================================
+Make sure if that is necessary. It should not be an overkill for us.
+CQRS makes system : highly Scalable and Resilient.
+
+You should consider using CQRS/ES if: You need auditability , You need additional resilience or scalability.
+
+State Based Persistence :
+-----------------------------
+Saving latest state in DB rather than the way how it reached that state.it means persisence of destination alone rather than the journey(intent)
+
+Disadvantage:
+-----------------
+Only the latest state can be viewed.
+The corrupted state cannot be fixed.
+
+
+Event Sourcing:
+-----------------
+1. For new domain insights.
+2. We can replay events from history.
+
+When using State Based Persistence, in order to recover from errors in state, or evolve our domain we can: Persist an audit log alongside our state so we understand where the state came from. 
+
+When an audit log is stored alongside the state, we must be wary of which of the following: The audit log and the state must be updated in a transactional way.
+
+A snapshot should be created: When the time to restore from the log is becoming excessive.
+
+If you need to evolve your data model, you should do so by: Creating a new version of the event
+
+Command Sourcing : Persist the commands instead of events.
+But commands must be idempotent.
+We need to validate the commands before persisting them. 
+
+the problem that we have encountered with these conflicting models is:
+  A model that is optimized for writes (Commands) may not be optimized for reads (Queries).
+  
+  
+CQRS : Command Query Responsiblity Seperation Model:
+=====================================================
+using the same DB model for read and write load is difficult sometimes.
+The aggregates that we use for write load does not match the needs for read load. Would not be higly performant.
+
+Most applications tend to have:  More reads than writes.
+
+So idea is to write(commnds) in a write model9DB / Data store) and then create projections  as per the requirement in the read model(Query == In Denormalized form  : Think of Reservation on Custormer ID based.)
+Each model can be independentaly optimized or scaled.
+
+
+An ideal read model is often setup so the data can be read directly from a single table in the database, as is, with minimal additional processing/formatting.
+
+Polyglot Persistence means: Using different databases within your system, depending on the use case
+
+A key benefit to combining CQRS and Event Sourcing is:
+ The presence of the event log allows all new projections to be retroactive.
+ The read and write models are decoupled, allowing them to evolve independently.
+ The read and write models can be optimized individually, depending on their needs.
+ 
+
+
+
+
+
+
+
 ************************************************************************************************************************************************************************************************************************************
 ************************************************************************************************************************************************************************************************************************************
 ************************************************************************************************************************************************************************************************************************************

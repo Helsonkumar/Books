@@ -65,7 +65,7 @@ Items to be explored:
 
 Inversion Of Control :(IOC) :  To handover the object creation to another Object Factory
 
-Spring Contaier : This is an object factory and helps us in:
+Spring Container : This is an object factory and helps us in:
 1. IOC
 2. Dependency Injection.
 
@@ -99,14 +99,13 @@ We can inject the dependency in 2 diff ways for an object.
 ****Contructor Injection :
 1. Create a dependent interface and create a class implementing that interface.
 2. Create a constructor in the dependent class with the dependency object as constructor parameter.
-2. Add the bean details in the container file.
+3. Add the bean details in the container file.
+
 
 <bean id="Cricket" class="Core_App.CricketCoach">
  		<constructor-arg ref = "Sooth"/>			
 </bean>
  		
-
-
 
 ****Setter Injection:
 We use setter methods using the property in the bean to inject the dependent object.
@@ -423,7 +422,7 @@ Spring Reference :
 
 Spring Core Annotations:
 ---------------------------
-@Autowired : Can be used at Cnstructor , Setter , field level
+@Autowired : Can be used at Constructor , Setter , field level
 @Qualifier 
 @Bean (method annoatation)
 @Required : If U need some property from the container (property name = "color"  value="blue")
