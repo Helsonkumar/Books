@@ -90,4 +90,78 @@ So the auth sever grants the client app the auth token to access the user detail
 Implicit Grant :
 ----------------------------------
 Used mostly by the Java Script apps.
-Similar to Auth-code-grant type , but 
+Similar to Auth-code-grant type , but no Auth-token concept exists.
+The auth-server directly send the Access-token to the client.
+
+
+
+JWt : Java Web Token:
+-------------------------
+U all know the HTTP is stateless.
+So to remember the user session we use session-id with Cookies from browser.
+This works well if the app is monolith.
+However for modern we apps where we have LB infront and the nodes would not remeber the session id of the previous interaction.We have solution like distributed cache which can hold the session detailswhich can further be read by all nodes to serve user request.
+But this is not a roboust solution. So we have JWT for us.
+
+Instead of sending the user with the reference of the seesion in the form of session-id , how about sending the user with the details of the session itself in a secured form with A SIGNATURE MARK?
+Think of receptionist sending the problem details instead of call reference.
+The next time the receptionist simply need to validate the signature in the token and serve the user request based on the details in the JWT.
+This is called as Java Web token.
+*******Time Bound Delegated Access***********.
+
+
+The modern or the recommended way to secure an API system is to Design as follows:
+1. Client interacts with OIDC server to get the Identity Token and exchange the same for an Access token with the Oauth Server.
+2. Then it handovers the access token(JWT token) (which is delegated with the level of access or authorization which an usr is eligible and Time limited)
+3. Each services simply needed to evaluate the token with the signature and serve the request.(Th
+4. Here the services do not have to check the token with the Auth Server for the validity of the token due to which the Auth Servers are not overloaded and the latency due to them is reduced.
+5. This is called the *****Zero Trust Model***** where the Authentication of each user request is checked for every time.
+
+
+Best Practise for Securing Your APIs.:
+-------------------------------------------
+Google Cloud uses Apigee (accquired by google)
+We get developer portal + API operational metrics for visisbility of API usuage + API services
+
+API Threats:
+------------------
+1. Software Bugs     : Do security test, Find the vulnerabilities using sonar lint,etc. Understatnd the change management process and check who is making the changes to your API.
+
+2. Injection Threats : SQL injection , Cross Site Scripting. 
+                       Do input validation as the primary line of defence.
+					   Using Swagger seps for proper input and Output specification.
+					   Using Regex for input validation.
+					   
+3. Denial Of service : Service availability issues:
+                       Scale out the app when the attacker traffic goes up. Check when such DOS would happen.
+					   using robust Google Load balancer.
+					   Cache response for frequent request
+					   Levearge Security Policies.
+					   Apigee offers  : Cache + Resource Quota(to restrict consumption based on users) + API Rate Limit
+			
+Use IAM service .
+use **Zero thrust model" as described above.
+Make sure the user exp is stays consistent.
+
+We use """Developer Portals"" to make the API consumer self-served.
+In APigee Security dashBoard we integrate the Developer Portal to identify the API key or client trying to register.
+
+
+4. Insider Threats: 
+Commonly overlooked.
+Exposing lot of data to insiders.
+Tract or Audit user activity with the APi using SSO,etc
+
+
+5.Change Management:
+Apigee gives holistic view of the changes happening to ur API and Infra.
+
+
+6. Spam and Abuse : Content Scrap, abuse,etc
+   Use ***Google Armour to idetify te metadata around your APi request.
+   Captcha to prevent the automated Bots to overwhelmed the API system.
+   
+   
+
+
+					   

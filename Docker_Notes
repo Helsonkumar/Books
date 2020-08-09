@@ -15,7 +15,16 @@ Note:  Docker are not meant to run an OS as standalone. Instead we can run a pro
 	   
 Basic Commands :
 =========================
-docker run image-name ==> THis would pull an image if it doee not exists and run the image as a container.
+
+docker build <<project with Dockerfile>>
+
+We need to tag an image locally with our repo name and tage name  before pushing into the remote repo:
+docker tag <<image_id>> helsonkumar/remote_repo_name:<<tag_name>>
+docker logindocker push helsonkumar/remote_repo_name:<<tag_name>>
+
+
+
+docker run image-name ==> This would pull an image if it doee not exists and run the image as a container.
 
 docker ps / docker ps -a ==> List downa all the conatiners
 
@@ -268,6 +277,7 @@ docke run -v volume-2:/var/lib/my_sql image_name
 Here the docker auto creates a volumn insdie the /var/lib/docker/volume ==> folder
 
 If we meed to map the existing volume to the docker to get persistent data :
+
 
 types of volumne mount :
 ---------------------------

@@ -269,6 +269,150 @@ In BigData processing  : Consumer might take long time to process the data. In t
 The maximum amount if time between 2 poll request. If this time is execeed then the broker would kill that consumer from the gropu and rebalances the partition
 So always check for this config or increase it if the consumer processing would take a long time to process data.
 
+
+
+13. Consumer Manual partiton assignment :
+-------------------------------------------------
+*****Manual partition assignment does not use group coordination, so consumer failures will not cause assigned partitions to be rebalanced******
+
+Kafka has its own Offset Storage by default.
+Storing the offset outside kafka offset storage makes the consumption more aotomic.
+This gives Exactly-once semantics instead of the default At-least-nce semantics.
+
+So if the data is stored in Db and the something goes wrong if the commit sync offset ops fails, then for such senarios good ifwe get to store the offsets in the same DB.
+
+Use case: Consider a partiton is assigned automatically
+So whne the conusmer goes down, then the consumer would call the """ConsumerRebalanceListener.onPartitionsRevoked(Collection)""" method to commit the offset of the current partitons handled
+Then it goes down.
+When the same partition is assigned to another consumer, then that new consumer would pick that partiton offsets processed so far by calling the ConsumerRebalanceListener.onPartitionsAssigned(Collection)
+
+If a consumer is assigned multiple partitions to fetch data from, it will try to consume from all of them at the same time, effectively giving these partitions the same priority for consumption. 
+
+Kafka supports dynamic controlling of consumption flows by using pause(Collection) and resume(Collection) to pause the consumption on the specified assigned partitions and 
+resume the consumption on the specified paused partitions respectively in the future poll(Duration) calls.
+
+Consumption of the records by the consumer can be controlled by the property (pause(collection) & resume(collection))
+This way we can hold pause and resume the consumption of records for certain topic and wait ofr another topic to complete.
+This would help such use cases.
+
+
+
+
+Transactions in Kafka from 0.11.0
+--------------------------------------------------
+Transactions were introduced in Kafka 0.11.0 wherein applications can write to multiple topics and partitions atomically. 
+***isolation.level=read_committed in the consumer's configuration. helps to read only the commited data by the producer.
+read-commited consumers.
+
+In read_committed mode, the consumer will read only those transactional messages which have been successfully committed. It will continue to read non-transactional messages as before. 
+
+For transactional messages we have marker mesages as well.
+So there will be a gap in the consumeed offset due to these markers.
+
+
+Multi-threaded Processing:
+----------------------------------------------------
+The Kafka consumer is NOT thread-safe.
+
+Single thread per consumer process : More TCP cnnection for more number of consumer process. No. of process are limited by the number of partitions within the topic.
+
+Multiple thread within a consumer for processing : Applicable when in-order processing not important.
+
+ConsumerRebalceListener : Interface
+----------------------------------------------
+A callback interface that the user can implement to trigger custom actions when the set of partitions assigned to the consumer changes.
+Useful when custom actions must be done during partiton rebalancing. Can implement one for each comsumer within the same group. This behaves subjectively.
+
+This is applicable when the consumer is having Kafka auto-manage group membership. (using cosumer.subscribe(topic)
+** subscribe(Collection<String> topics, ConsumerRebalanceListener listener)
+
+
+******If the consumer directly assigns partitions, those partitions will never be reassigned and this callback is not applicable.(when consumer.assign(topicpartition)
+Mind this......
+
+
+
+Partiton Re-balance/ Re-assignment event  takes place when : 
+-------------------------------------------------------------------------
+when processes die, new process instances are added or old instances come back to life after failure. 
+Partition re-assignments can also be triggered by changes affecting the subscribed topics (e.g. when the number of partitions is administratively adjusted).
+
+Note*** that callbacks only serve as notification of an assignment change
+
+
+ By saving offsets in the onPartitionsRevoked(Collection) call we can ensure that any time partition assignment changes the offset gets saved.
+
+This callback will only execute in the user thread as part of the poll(long) call whenever partition assignment changes.
+So partition assignment would always takes place rite before we go for the next Polling..
+
+The offsets of the partitons handled by a consumer is always saved when partitons are revoked from that consumer .
+The next cosumer whihc takes over that partiton would read the saved offset.
+
+ onPartitionsRevoked  : save the offset state of partitions (it is alwsy called before onPartitionAssigned)
+ onPartitionsAssigned  : load the saved state
+ onPartitionLost : occurs when the partition is lost due to some considition ebfre rebalancing.
+                   For example, if the session times out, then the partitions may be reassigned before we have a chance to revoke them gracefully. 
+ 
+ 
+Rebalance event: Types
+---------------------------
+During a rebalance event, the onPartitionsAssigned function will always be triggered exactly once when the rebalance completes. 
+That is, even if there is no newly assigned partitions for a consumer member, its onPartitionsAssigned will still be triggered with an empty collection of partitions.
+****As a result this function can be used also to notify when a rebalance event has happened.
+
+Eger rebalancing : With eager rebalancing, onPartitionsRevoked(Collection) will always be called at the start of a rebalance.
+                   onPartitionsLost(Collection) will only be called when there were non-empty partitions that were lost. 
+		
+Cooperative rebalancing :  onPartitionsRevoked(Collection) and onPartitionsLost(Collection) will only be triggered when there are non-empty partitions revoked or lost from this consumer member during/after a rebalance event.
+
+
+#############################################################################################################################
+
+These callback are executed in consumer.poll(Duration)
+
+
+ public class SaveOffsetsOnRebalance implements ConsumerRebalanceListener {
+       private Consumer<?,?> consumer;
+
+       public SaveOffsetsOnRebalance(Consumer<?,?> consumer) {
+           this.consumer = consumer;
+       }
+
+       ## A callback method the user can implement to provide handling of offset commits to a customized store.
+	   ## This method will be called during a rebalance operation when the consumer has to give up some partitions. 
+	   ## It can also be called when consumer is being closed or  unsubscribing (KafkaConsumer.unsubscribe()).
+       public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
+           // save the offsets in an external store using some custom code not described here
+           for(TopicPartition partition: partitions)
+              saveOffsetInExternalStore(consumer.position(partition));
+       }
+
+
+       ## A callback method you can implement to provide handling of cleaning up resources for partitions that have already been reassigned to other consumers.
+	   ## Executes when the conusmer is not notified of rebalance. So the partiton gets lost.
+	   ## During exceptional scenarios when the consumer realized that it does not own this partition any longer, i.e. not revoked via a normal rebalance event, then this method would be invoked.
+       public void onPartitionsLost(Collection<TopicPartition> partitions) {
+           // do not need to save the offsets since these partitions are probably owned by other consumers already
+       }
+
+
+       ## A callback method the user can implement to provide handling of customized offsets on completion of a successful partition re-assignment.
+	   ##  This method will be called after the partition re-assignment completes.
+       public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
+           // read the offsets from an external store using some custom code not described here
+           for(TopicPartition partition: partitions)
+              consumer.seek(partition, readOffsetFromExternalStore(partition));
+       }
+   }
+
+
+#############################################################################################################################
+
+
+
+
+
+
 ==============================================================================================================================================================================================================================================================
 Notes Kafka Avro Schema Registry training:
 ------------------------------------------------------

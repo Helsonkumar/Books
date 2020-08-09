@@ -1,0 +1,27 @@
+How to exclude all local commits and add only the latest commit to remote repo from local repo:
+----------------------------------------------------------------------------------------------------
+git reset --soft/--hard origin/master 
+(soft : preseves ur changes , but resets the commit ==> make the remote repo to look less noisy)
+(hard : removes ur local changes and resets ur commit ==> you will loose your changes in local after reset)
+
+
+
+
+printing logs of commimt:
+--------------------------------
+git log --pretty ---oneline
+
+
+
+Denotions:
+----------------------------
+HEAD -> master ==> current pos in local repo
+Using which we can track how far we are ahead of remote
+
+origin/master , origin/HEAD (denotes ur pos in remote repo)
+
+
+
+Undo a commit :
+----------------------------
+git revert  <<commit-hash>>
