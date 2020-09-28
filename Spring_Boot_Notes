@@ -434,6 +434,34 @@ Spring Core Annotations:
 @Value (in the seeter 			
 
 
+============================================================================================================================================================================
+
+Jdbc Tutorial :
+---------------------
+Java  ==> JDBC API ==> JDBC Driver Manager ==> JDBC Driver ==> DB server
+
+Class.forName(props.getProperty("DB_DRIVER_CLASS"));
+makes the db driver to be lossely coupled with the code.using refelection enables us to do so.
+The Db driver resgiter itself to DriverManager.
+We can use savepoint in jdbc to rollback and commit the txn till some point.
+
+
+
+Spring Transaction Management :
+================================
+Global and Local transactions
+
+We have Decalratiove or Programmatic Txn mgmt.
+
+The key to the Spring transaction abstraction is the notion of a transaction strategy. 
+A transaction strategy is defined by the org.springframework.transaction.PlatformTransactionManager interface:
+
+Isolation, propagetion , Time-out , Read-only 
+
+
+
+
+
 
 
 

@@ -1,5 +1,9 @@
 Design Patterns Notes:
 =================================
+Reference  : 
+-------------
+https://howtodoinjava.com/design-patterns/structural/composite-design-pattern/#:~:text=pattern%20Final%20notes-,When%20to%20use%20composite%20design%20pattern,generic%20functionality%20across%20the%20structure.
+
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 Things to be explored:
@@ -108,6 +112,65 @@ Multiple builder under a common Primary builder.
 ****************************************************************************************************************************************************************
 Factory  Pattern:
 ****************************************************************************************************************************************************************
+
+
+
+
+
+
+****************************************************************************************************************************************************************
+Composite  Pattern:
+****************************************************************************************************************************************************************
+Composite design pattern is a structural pattern which modifies the structure of an object. 
+This pattern is most suitable in cases where you need to work with objects which form a tree like hierarchy. 
+
+In that tree, each node/object (except root node) is either composite or leaf node.
+
+Implementing the composite pattern lets clients treat individual objects and compositions uniformly.
+
+E.g : Folder with Folders and Files analogy.
+
+We have a common interface called Componenet
+We have Composite(Directory comprises of Files or another Directory) implements Componenet
+We have Leaf(File) implements Component
+
+The interface is defined with child management methids (like getFiles, putFiles,etc) also the actual operation
+
+So both Composite and Leaf must implement all methods applicable.
+
+We can ""throw UnsupportedOperationException "" if a method is not applicable.
+
+The Composite simply meaant for Child management....The actual operation is assigned to its child.
+
+
+
+
+****************************************************************************************************************************************************************
+Factory  Pattern:
+****************************************************************************************************************************************************************
+
+When U want to move the object cration logic to some other seperate code then we will use Factory Design pattern.
+
+Simple Factory :
+--------------------
+Given a String it will create an instance of a class.
+We usually have this in a static method inside a  class.
+
+Simplefactory : Know the list of subclasas for which it will cerate an instance
+Factory : The object creation is delegated to its subclass.
+          The list of sublcasses for whihc the instance need to be created is not known in advance.
+		  
+		  
+Factory design Pattern :  Here the ceraetion of objects is delegated to a subclassCreatorFactory.
+Each subclass pertains to a subClassCreator.
+Adv : The object instance of new class is all aout adding new subclass and its relevant subClassCreatorfatory class.
+This will make no code change to the interface for any new subclass being added.
+DisAdv : But for every new obj creation we need to add new subclass factory.Bu this can be even mitigatd by adding new parameter to the method.
+
+  
+
+		  
+		  
 
 
 

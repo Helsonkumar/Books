@@ -29,7 +29,7 @@ Brokers keep track of the message consumed by the consumer. It is also distribut
 Cretaed to implement AMQP protocol of message exchange.
 Not for High volume and real time data wprocessing
 Retains ony unread messages
-In dependent of external servcies
+In dependent of external servciesdf
 AMQP or any other protocol driven
 Complex routing logic
 Rabbit MQ can address the use case of Kafka wbut with additinal software
@@ -150,7 +150,7 @@ So check that one  wisely.
 
 
 
-2*.Idempotent producer  : A producer message is commited at the broker end only once. Even of the producer retries to send the message foe amultiple times since it had not received ack, the broker would 
+2*.Idempotent producer  : A producer message is commited at the broker end only once. Even if the producer retries to send the message for multiple times since it had not received ack, the broker would 
 find the producer.rquest.id and checks if this is already commited. So if this is already commited then the broker would not commit the message as duplicate.
 This is called idempotent producer.
 To acheive this  : **** producerProps.put("enable.idempotence", true) ****
@@ -184,7 +184,7 @@ But when theis biffere is full or the producer is not able to drop messages to t
                    So offset is commit as soon as the message is read by the consumer and stired in its buffer. Even though it is not processed.
 				   So when the consumer goes down whilst in the middle of processing the record since the offet is already commit , there might be message losses.
 
-    At-leas-Once : The offset is commit only after the messages are processed . So even if the consumer goes down in the midst of processing, then when it comes back 
+    At-least-Once : The offset is commit only after the messages are processed . So even if the consumer goes down in the midst of processing, then when it comes back 
                    it will get to reprocess the same message whihc is already processed. So we need to make our consumer processed """IDEMPOTENT""" 	
 
     Exactly-Once : Worls for kafka-kafka models. 
@@ -364,6 +364,11 @@ Eger rebalancing : With eager rebalancing, onPartitionsRevoked(Collection) will 
                    onPartitionsLost(Collection) will only be called when there were non-empty partitions that were lost. 
 		
 Cooperative rebalancing :  onPartitionsRevoked(Collection) and onPartitionsLost(Collection) will only be triggered when there are non-empty partitions revoked or lost from this consumer member during/after a rebalance event.
+
+
+
+Algorithms in Rebalance listner : RangeAssignor
+
 
 
 #############################################################################################################################
@@ -574,6 +579,14 @@ Schema Registry and REST Proxy :
 ========================================
 Schema Registry : Used to store the Schema of the Avro data written to the Kafka Cluster.
 The S.R hodls the Schema for the avro data and it is used to serialze and deserialize the avro data into the Kafka Cluster.
+
+
+==============================================================================================================================================================================================================================================================
+
+Kafka Spring Course:
+--------------------------
+auto.create.topic.enable = false (not to let kafka to create topic of its own when we write to topic which does not exists)
+
 
 
 

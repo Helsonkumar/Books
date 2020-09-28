@@ -20,8 +20,8 @@ docker build <<project with Dockerfile>>
 
 We need to tag an image locally with our repo name and tage name  before pushing into the remote repo:
 docker tag <<image_id>> helsonkumar/remote_repo_name:<<tag_name>>
-docker logindocker push helsonkumar/remote_repo_name:<<tag_name>>
-
+docker login
+docker push helsonkumar/remote_repo_name:<<tag_name>>
 
 
 docker run image-name ==> This would pull an image if it doee not exists and run the image as a container.
@@ -302,3 +302,5 @@ Docker has 3 Network Types :
 3. Host ===> Here each docker container is connected to the host network. They would directly get attached to the host port. So no port mapping is needed to expose them to the external world.
 
 ****docker network ls ===> list the networks available in the docker
+
+

@@ -254,4 +254,32 @@ A key benefit to combining CQRS and Event Sourcing is:
 ************************************************************************************************************************************************************************************************************************************
                                                                                      Google Cloud 
 																			================================
-																			
+		
+Check for Google Cloud Products:
+----------------------------------
+https://cloud.google.com/products
+
+Phase 1: Experiment with a Microservices Deployement with the below products
+------------------------------------------------------------------------------
+Compute         : Compute Engine  + App Engine
+
+Containers      : GKE  + GKE Monitoring
+
+Databases       : BigTable + MemoryStore + Cloud SQL
+
+API Management  : Apigee + Cloud Endpoints
+
+Serverless      : Cloud Functions + Cloud Run
+
+Networking      : Cloud Load Balancing + Cloud Monitoring + Cloud Logging
+
+
+
+
+
+
+
+
+
+
+		
