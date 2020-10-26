@@ -156,18 +156,60 @@ Simple Factory :
 Given a String it will create an instance of a class.
 We usually have this in a static method inside a  class.
 
-Simplefactory : Know the list of subclasas for which it will cerate an instance
+Simplefactory : Know the list of subclasas for which it will cerate an instance.
 Factory : The object creation is delegated to its subclass.
           The list of sublcasses for whihc the instance need to be created is not known in advance.
 		  
 		  
 Factory design Pattern :  Here the ceraetion of objects is delegated to a subclassCreatorFactory.
 Each subclass pertains to a subClassCreator.
-Adv : The object instance of new class is all aout adding new subclass and its relevant subClassCreatorfatory class.
+Adv : The object instance of new class is all about adding new subclass and its relevant subClassCreatorfatory class.
 This will make no code change to the interface for any new subclass being added.
 DisAdv : But for every new obj creation we need to add new subclass factory.Bu this can be even mitigatd by adding new parameter to the method.
 
   
+  
+
+****************************************************************************************************************************************************************
+Abstract factory  Pattern:
+****************************************************************************************************************************************************************
+Basically used to create a set of related objects .ie. We have 2 object in the same class.
+So we have diff creatwor factory for diff combinationof classses.
+
+public tyepA
+public typeB
+
+A1 extends A
+A2 extends A
+
+B1 extends B
+B2 extends B
+
+public abstract class objCreator {
+
+  typeA a;
+  type B;
+
+}
+
+
+
+
+public class Comb1Creator extends objCreator{
+     //* for A1 and B1
+}
+
+
+public class Comb2Creator extends objCreator{
+    // * for A2 and B2
+}
+
+
+****************************************************************************************************************************************************************
+Prototype  Pattern:
+****************************************************************************************************************************************************************
+
+When we find the 
 
 		  
 		  

@@ -1,0 +1,99 @@
+Spark Notes :
+=====================
+
+For Spark SQL  : The fulcrum is the "DataSource API". So any format of data can be analyzed. 
+So user must implement a plugin using this DataSource API to analyze a custom formatted data.
+
+RDD , DataFrame,  SQL
+
+RDD is not used these days since it is cumbersome.
+
+DF and SQL are Structured API.
+But they limit what can be expresssed. 
+But hey make the code more Declarative and More space for optimization (here where the Catalyst Optimizer comes into the picture)
+
+
+SQL : Catalyst optimizer
+==============================
+How catalyst work:
+-------------------- 
+Analysis Phase:                                           Optimization Phase:                     Physical Planning                              Code Generation  (Converst the Physical plan into specialized Java code )
+====================                                     =======================                 =========================                    =========================
+Unresolved Logical Plan  ===> Resolved Logical Plan ===>  OPtimzed Logical Plan   ===> Physical plans ===> Cost based model ==> Selected Physical plan       ====> RDD  ====> Result
+
+
+Physcial plan  : Cost based model  : Its does smoething like Join Selection
+ But rite now we dont do consideration of diff rules for cots optimization.
+ Instead we currently generate only one Physical plan and we stck to that.
+ 
+*** Step 1: User code is abstracted as Tree despite of the language in whihc it is written
+
+*** Step 2  : Transformation  : Logical plan to physical plan (using strategies) Implemented using Scala partial function and Pattern matching.
+
+Logical plan : Defines the coputataion on the data w/o defininf how to conduct such computation.
+
+Rule are applied  : Rules are something like doing only Row Projection and Column Pruning.
+
+so these rules are applied in batches to batch of rows.
+
+Looks like the data layre or staorage layer statictics is very imprtatnt to dcode the effective query plan.
+
+But the storage layer statistics may change at nay point of time and it is out of Spark's control
+
+So Databricks brought in 2 solutions: Delat lake and AQE
+
+Delat lake  : Gives ACID model on Spark data. It is an open soruce storage layer. Better optimization oppurtunities.
+ 
+ 
+ SHUFFLE  or BROADCAST divides the query execution into stages.
+ Intermediate results are materialized at the end of query stages. (Query stages points are the pipeline break point)
+ Query stage point is optimal for runtime optimization.
+ 
+ Unlike WE HAVE BEEN THOGUTH, intermediate results between stages are written to Disk, so the optimal size of the data is calculated for the AQE.
+ 
+ So the query plan is re-calculated at the end of every stages.
+ 
+ Effect of partition being too small and too large :
+ ===================================================
+ GC pressure, disk spill
+ inefficient IO , Scheduler overhead , task setup
+ 
+ Effect of Skew join or Skew data in general
+ ================================================
+ long running task for a stage among list of tasks.
+ Disk spilling.
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+AQE  : Adaptive Query Execution in Spark 3.0
+=================================================
+It simply optimizez the layer between logical and Physical plan dynamically by using the runtime metrics of the stages involved in the spark pipeline.
+
+At present, the following optimizations have been implemented in version 3.0:
+
+****Dynamically coalescing shuffle partitions : Earlier it use to be a static one. But now it can be dynamic.
+****Dynamically switching join strategies
+****Dynamically optimizing skew joins
+
+Dynamically coalescing shuffle partitions
+------------------------------------------
+Transformations on a dataset deployed on Spark can be of two types: narrow or wide
+
+Wide-type data needs partition data to be redistributed differently between executors to be completed. 
+e.g groupBy operation . Joins ,etc
+
+The number of partitions after optimization will depend instead on the setting of the following configuration options:
+spark.sql.adaptive.coalescePartitions.initialPartitionNum
+spark.sql.adaptive.coalescePartitions.minPartitionNum
+spark.sql.adaptive.advisoryPartitionSizeInBytes
+
+where the first represents the starting number of partitions (default: spark.sql.shuffle.partitions), 
+the second represents the minimum number of partitions after optimization (default: spark.default.parallelism), and 
+the third represents the “suggested” size of the partitions after optimization (default: 64 Mb).

@@ -1,0 +1,16 @@
+Presto : Dist Query engine to query data at light speed (analytical queries) like  DW at the scale of dist systems
+Used to retrive data from HDFS at faster speed.
+Also from Hive , Cassandra, MongoDb , RDBMS
+A single Presto query can combine data from multiple sources, allowing for analytics across your entire organization.
+Presto is targeted at analysts who expect response times ranging from sub-second to minutes.
+It reads directly from HDFS, so unlike Redshift, there isn't a lot of ETL before you can use it.
+
+Presto was designed to handle data warehousing and analytics: data analysis, aggregating large amounts of data and producing reports.
+These workloads are often classified as Online Analytical Processing (OLAP).
+
+Check out the below blog : For query tool selection (Hive , Spark SQl, Impala):
+----------------------------------------------------------------------------------
+https://ieeexplore.ieee.org/document/7334737
+Blog : https://towardsdatascience.com/query-data-effectively-in-hadoop-to-feed-your-hungry-data-science-ideas-c0a23fc4b9e0
+
+In query tool selection decisions, we should consider its performance in both big data and moderate data environment, in both batch mode and interactive mode.

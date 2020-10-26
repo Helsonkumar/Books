@@ -1,0 +1,351 @@
+MongoDb  : 28-09-2020
+======================
+Schemaless
+Less relation
+Database- > Collection -> Documents
+update 100 nested levels
+16MB is the maximum size of a document
+
+/data/db /  ==> is the place where the Db records or data are stored as bson files in binary format.
+/data/logs/ ==> stores logs.
+
+mongod --dbpath "C:/data/db" : for Db
+mongo  : for shell client
+
+mongod --fork : to run as background service
+
+MongoDb Compass for visualization :
+
+
+
+***** When to Prefer MongoDb over SQL *****
+============================================
+NoSQL commonly referred to as “Not Only SQL”.
+With NoSQL, unstructured, schema less data can be stored in multiple collections and nodes and it does not require fixed table sachems, it supports limited join queries, and we scale it horizontally.
+
+
+
+Adv : 
+======
+Comes with cache , cheap , Horizontally scalable.
+No relations for faster data access.
+No need to bring down any system for chagning schema :  Dynamic schema
+
+primary goal : Flexibility and Speed
+
+
+Disadv :
+========= 
+No SQL , Schema Management , No Stored proc
+No ACID. So No data integrity.
+
+
+
+When to Use SQL :
+-------------------
+You need ACID compliancy
+Your data is structured and unchanging: does not make any sense to use a system designed to support a variety of data types and high traffic volume(like MongoDB)
+Low maintanance
+Limited Budget
+High transaction
+
+
+
+when to use No-SQL:
+---------------------
+The following features are driving the popularity of NoSQL databases like MongoDB, Couch DB, Cassandra, and HBase:
+Storing large volumes of data without structure
+Using cloud computing and storage : Using affordable hardware on-site for testing and then for production in the cloud is what NoSQL databases are designed for.
+Rapid development :  A NoSQL database doesn’t require the level of preparation typically needed for relational databases.
+when  U need high availablity and automatic fast data recovery
+Has Built in SHARDING
+When things are cloud based, but think of Data security.
+MongoDb in general is highly flexible to be run in any cloud env . it is cloud agnostic
+
+
+Summary  : When data sceham is not deterministic.
+           When volume of data is huge
+		   
+Terminal  : alt + shift  + or -
+
+
+
+> db.flightdata.insertOne({name:"Luftansa" , madein :"USA"})  
+{ "acknowledged" : true,  "insertedId" : ObjectId("5f75c0ed6dbb9e7760d404f0") }
+
+
+CRUD :
+============
+
+Create : insertOne , insertMany
+> db.flightdata.insertOne({name:"Luftansa" , madein :"USA"})  
+db.flight.insertMany([{},{}]) : Inserting many docs inside an array
+
+
+
+Read : findOne() , find()
+db.city.find({km: {$gt: 2000}}).pretty()
+db.city.find() ==> gives us a Cursor.
+> db.city.find().forEach((doc) => {printjson(doc.name)})
+
+> db.flightdata.find({}, {_id: 0 ,  name: 1}) : project to select only th speciifc column and ingonre another column (use 1 and 0 respectivley)
+Projection : Filtering only the columns which are needed
+> db.city.find( {} , {name: 1 , _id: 0}). pretty()
+
+
+
+Update: update , updateOne , updateMany
+db.city.updateMany({} , {$set: {"marker" :"capital"}})     
+
+
+
+db.city.update({"state": "Chennai"} , {"detsination" : "Tamilnadu"})     : Update simply replaces the given document for the given key directly. : This is like overridding.
+use replaceOne() instead                                             
+
+
+
+
+Delete : delete() , deleteOne()
+
+
+
+
+
+Data Types  :
+=======
+Text , Number,  Boolean,  integer , NumberLong ,  Decimal , ObjectId(), ISODate , Timestamp  Array, EmbeddedDoc
+NumberInt , NumberLong , NumberDeciaml
+
+Docs are ordered as per the ObjectId
+
+Each Driver Api has its own specification.
+
+
+Data Modelling priniciples:
+=================================
+What data I need  : Decides the fields or attributes
+Where do I need my data  : Decides the collection
+What to display : decides my query
+How often to retrive the data  : read access or rite access pattern
+
+Use embedded document when we have one-2-one relationship.
+use Array for denotin One-to-many relationship 
+
+
+Many-To-Many Relationship:
+=============================
+We can use embedded doc or reference.
+When u use embedded doc the data duplication occurs and we will have to change the data in all chld table when the originla data is changed.
+But it depends on whether do we really care about the change to data in the original table or not.
+So always check for frequency of the data getting updated in the parent tyables. Then go for either embedded or reference pattern
+
+
+To get the aggregated data into the collection : 
+=====================================================
+db.users.aggregate([{$lookup: {from: "books" , localField: "books" , foreignField: "_id" , as: "creators"} }]).pretty()
+
+
+Schema Validation :
+===========================
+We can enforece shcema validation  using  : $jsonschema
+We can choose validation level
+
+
+
+
+
+
+************* Things to consider during Data Modelling in MongoDb ******************
+==========================================================================================
+1. Consider the format in which you will fetch the data.
+2. How often you will fetch and change your data. Do u need to optimize for reads or writes
+3. How much data you will save. How big the data is.
+4. How is your data related. This tells embeeded docs or use reference.
+5. Will duplicates hurts you.
+6. Will you hit Db storage limits?
+
+
+Embedded or reference:
+========================
+Use Embedded when one-one relation and one-many relation and no data size matters or exceeds. Alos when update to parent is not expected.
+use refernce when data size matters
+
+
+
+MongoDb performance :
+=============================
+
+
+
+
+
+MongoDb Indexes:
+================================
+Indexes used for fasster search
+
+uses orders the indexed_col valuein ascending order. So when we use the indexed_col name as the predicate
+Then the server checks for index presents for that column and then do binary search .Each index items within the index holds the Ref / Pointer
+So the read becomes faster.
+
+But for every insert DB updates the pointer to new record in the index as well.
+So write becomes slower.
+
+
+Import existing json into a collection :
+================================================
+mongoimport input.json -d dbName -c collectionName --jsonArray
+
+db.coll.explain("executionStats").find({"dob.age" : {$gt: 25}})
+
+Creating Index :
+=================
+db.coll.createIndex({"dob.age" : 1})
+1/-1  : ascending or descending
+
+We can load data and then define Index on top of the data unlike RDBMS.
+
+
+Index Restriction :
+=========================
+dont  use index if ur query retrives more data or almost all data from the collection.
+because we already have all doc in memory and doing index scan to retrieve all data would not help
+So design ur index wisely.
+
+Compound index  :
+=====================
+index whihc includes ore than one column values
+
+db.coll.createindex({"dob.age" :  1 , gender: 1})
+
+We have 2 columns in the index
+
+So query which includes these 2 columns in the search query would work fast.
+
+We have  : COLLSCN(entire collection scan) and INXSCAN (index scan)
+
+if we have compound index and only the we use the second column in the query then it goes for COLLSCAN
+since we use only one of the intermediate column in the query.
+
+
+
+Sorting in MongoDb :
+=====================
+mongoDb can only reserve 32MB for sorting document.
+if anythign ebyond this 32Mb would take time while sorting.
+So have the sorted column defined in Index so MongoDb can actually fetch the sorting order from index instead of doing the sorting in memory.
+
+
+Default index :
+===================
+db.contacts.getIndexes() ==> default index  -> _id (Object id)
+object id acts as default primary key so no two docs can have the same key
+
+db.coll.createindex({"dob.name" :  1 } , {unique : true} )
+
+
+partial filter expression :
+===============================
+even if u had stored more than one coulmn in the compound index, sometimes we would not use all the value for a column in the dex while doing read.
+e.g : age and gender as Compound index, but ur search query do filter for only age of male candiates, then storing value of female candidates in the index is waste of storage
+So we go for using partialColumnIndex
+
+So checking the COLLSCAN or INDXSCAN from the exlain stats really madated here.
+
+So use partialFilterexpression as below :
+=============================================
+db.coll.createIndex({"dob.age" : 1} , {partialFilterExpression : {gender :  "male"}})
+We store only the age of male in index. So disk sace is saved.
+If ur query search for age of femailes, then it goes for full coll scan
+
+
+Applying Partial Index  with unique
+=============================================
+U know index is walys updated whe U add some record into the collection.
+db.coll.createIndex({"dob.age" : 1 , {unique : true , partialFilterExpression: {email : {$exists: true}}}})
+
+means that add the value for column email in the index only when it exists. else dont add it.
+if this is no the case , then when we try to add email as null for any other record and since email then i throws duplicate value error since we already have email column as null for another record.
+
+
+TTL : Time to Live:
+======================
+We can set a TTL for a doumentvia index
+
+db.session.createIndex({createDt : 1} , {expireAfterSeconds: 10})
+After 10 sec all docs would be deleted
+used to store the tempory record whihc can destroy itself after sometime like websession
+
+
+
+Query Planning : Covered Queries
+==========================================
+If u query is about to retrieve only the column in Index then it would be very efficient and its is called as Covered Queries.
+
+MongoDB simply categorises a query plan as winning plan and rejected plan based on the cost of the plan.
+The winning plan is cached in memory for sometime and removed if there is any change in the index or addition of new data anything like that.
+
+use  : explain("allPlanExecution")
+
+
+MultiKey Indexes :
+====================
+Consider an array of multiple values.We can create index over va;lues in the array so the search would be fastFor array with docs also we can create index. or even with the fields within the docs.
+But we cnanot create compound index over 2 Arrays elements.
+
+
+Text Search :
+==================
+We can have only one text index
+
+If we have any column with text within it, then we can use that column as index. But need to use "text"
+
+db.coll.createindex({"description" : text})
+
+the MongoDb would exclude the stopper words like 'the' 'or' and just cerate index on top of other words in the column
+
+db.coll.find({"text" : {$search: "\"word1 word2\""}}).pretty()
+
+
+
+Capped Collection :
+==========================
+Old docs are auto deleted when the new docs are added. Like LRU in cache.
+
+db.coll.find().sort({natural: -1})
+
+
+Sharding MongoDb :
+=======================
+Choosing Sharding key is major task.
+
+Client ==> MongoServer ==> Router ==> Shard nodes
+
+A query is always evaluated for shard key.
+if it does not contain shard key then the query is broadcasted to all nodes to fetch the data.
+if is contains hard key, then only the node whihc holds the relevant data would be called.
+
+
+
+mongoDb Atlas : Cloud based solution
+============================================
+
+
+
+Transactions : from version 4.0
+====================================
+const session_var = mongo.getDatabase().startSession ==> get the session from DB
+session.startTransaction()
+const var1 = session.getDatabase("db_name'). coll_name1
+const var2 = session.getDatabase("db_name'). coll_name2
+___do all action on the colllections under session ----
+session.commitTransaction() or session.abortTransaction()
+
+
+MongoDb vs Postgres SQL:
+=============================
+Postgre SQL is preffered over MongoDB.
+Adding one new mandatory field to existing docs would need us to pull the docs update and write it back. This is not the case in Postgre
+
+
+
+

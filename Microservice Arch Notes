@@ -18,6 +18,21 @@ Items to be explored.
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 Microservices nature:
 ---------------------------
+Before we dive into the design patterns, we need to understand on what principles microservice architecture has been built:
+
+Scalability
+Availability
+Resiliency
+Independent, autonomous
+Decentralized governance
+Failure isolation
+Auto-Provisioning
+Continuous delivery through DevOps
+
+
+
+
+
 Microservice are very difficult to be implemented in product as a big bang.
 Microservice solves the below problems like :
 **Issue with deplying a monolith.
@@ -311,3 +326,16 @@ Code	Name	Description
 502	Bad Gateway	The server got an invalid response
 503	Service Unavailable	The server is not ready to handle the request
 504	Gateway Timeout	The server is acting as a gateway and cannot get a response in time
+
+
+
+Monolith To Microservices:
+================================
+Pattern  : Strangler Design pattern
+Change your monolith to "Modular Monolith"
+Change your each modules from the first step into individual Microservices
+
+key Items  :
+------------------
+Discovery Services
+API Gateway

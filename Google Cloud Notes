@@ -254,7 +254,35 @@ A key benefit to combining CQRS and Event Sourcing is:
 ************************************************************************************************************************************************************************************************************************************
                                                                                      Google Cloud 
 																			================================
-		
+																			
+																			
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                                                                                    GENERAL NOTES
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+** We can manipulate tge GCP res using gcloud SDK , API lib , Consle
+
+
+** Cloud SDK must be installed in local machine to access a VM instance or any GCP service from local machine.
+   Then run gcloud --commnd in the sdk console to manipulate the GCP resources from your local machine
+   run glcoud init ==> to set up the project and do anything
+   gcloud compute instance list
+   gcloud compute ssh "instance_name"  ==> connects to the given VM instance using ssh putty
+   
+   
+**  Always enable the API for any service which you need to access.
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	
 Check for Google Cloud Products:
 ----------------------------------
 https://cloud.google.com/products
@@ -274,12 +302,146 @@ Serverless      : Cloud Functions + Cloud Run
 Networking      : Cloud Load Balancing + Cloud Monitoring + Cloud Logging
 
 
+Security Challenges with Cloud  : IS APP Dev
+=================================================
+Characteristics of Cloud  :
+-----------------------------
+1. On demand and Self Service
+2. Broad Network accesse
+3. Resource pooling
+4. Rapid Elasticity
+5. measured Sercvice  : Does not have to be infinite in elastic. setting up threshold for service monitoring.
+
+
+Cloud Service Model :
+---------------------------
+IaaS : 
+=======
+only hardware is provisioned and the network firewall things are taken care.
+user has control over Apps and OS and Application Firewall and Runtime like Web or App server.
+
+
+PaaS : Serverless
+======================
+Customer controls only the App and Secure Data Access Controls.
+The OS and rest are taken care by the vendor.
+
+
+SaaS:
+===================
+Highest Level of Cloud Service model.
+Customer has just the control over the deployed application which can leverage the cloud vendor's tools and technologies.
+Can do the config changes to the underlying application hosting environments.
+More secured than the self managed one since we have dedicated team to do the security checks for the hosted software.
+
+
+Deployement Model :
+=======================
+Private Cloud : Strong control over the env like static Ip assignment etc
+Community Model : 
+Public Cloud
+Hybrid Cloud
 
 
 
 
+Google Cloud products :
+=============================================================================================================
+                                         COMPUTE ENGINE  
+=============================================================================================================
+
+VIRTUAL MACHINE RUNNIG IN GOOGLE CLOUD DATACENTER
+
+General purpose (E2, N1, N2, N2D) machines provide a good balance of price and performance
+Compute optimized (C2) machines offer high-end vCPU performance for compute-intensive workloads
+Memory optimized (M2) machines offer the highest memory and are great for in-memory databases
+Accelerator optimized (A2) machines are based on the A100 GPU, for very demanding applications	
+
+Choosing the right machine family and type:
+-------------------------------------------------
+General purpose - These machines balance price and performance and are suitable for most workloads including databases, development and testing environments, web applications, and mobile gaming.
+
+Compute-optimized - These machines provide the highest performance per core on Compute Engine and are optimized for compute-intensive workloads, such as high performance computing (HPC), game servers, and latency-sensitive API serving.
+
+Memory-optimized - These machines offer the highest memory configurations across our VM families with up to 12 TB for a single instance. They are well-suited for memory-intensive workloads such as large in-memory databases like SAP HANA and in-memory data analytics workloads.
+
+Accelerator-optimized - These machines are based on the NVIDIA Ampere A100 Tensor Core GPU. With up to 16 GPUs in a single VM, these machines are suitable for demanding workloads like CUDA-enabled machine learning (ML) training and inference, and HPC. 
+
+
+These are the avilable families  : Under each families we would many machine types.
+
+We would have multiple VM instance running in one Host with Hypervisor. So for diff user each VM instance belongs to one user each. Just visualize it.
+
+
+
+General purpose family :
+---------------------------
+E2 offers the lowest total cost of ownership.
+Offer up to 32 vCPUs and 128GB of memory per node
+E2 machine types also leverage dynamic resource management,
+If you have workloads such as web serving, small-to-medium databases, and application development and testing environments 
+that run well on N1 but don’t require large instance sizes, GPUs or local SSD, consider moving them to E2.
+
+
+
+N2 introduced the 2nd Generation Intel Xeon Scalable Processors 
+offer a greater than 20% price-performance improvement for many workloads and support up to 25% more memory per vCPU.
+run at 2.8GHz base frequency, and 3.4GHz sustained all-core turbo, offer up to 80 vCPUs and 640GB of memory. 
+This makes them a great fit for many general purpose workloads that can benefit from increased per core performance, 
+Including web and application servers, enterprise applications, gaming servers, content and collaboration systems, and most databases.
+Whether you are running a business critical database or an interactive web application, N2 VMs offer you the ability to get ~30% higher performance from your VMs,
+N2 instances perform 2.82x faster than N1 instances on AI inference of a Wide & Deep model using Intel-optimized Tensorflow, 
+
+
+
+N2D VMs are built on the latest 2nd Gen AMD EPYC (Rome) CPUs, and support the highest core count and memory of any general-purpose Compute Engine VM
+same features as N2 VMs including local SSD, custom machine types, and transparent maintenance through live migration.
+N2D VMs provide performance improvements for data management workloads that leverage AMD’s HIGHER MEMORY BANDWIDTH and higher per-system throughput 
+with up to 224 vCPUs, making them the largest general purpose VM on Google Compute Engine.
+N2D machine types are suitable for web applications, databases, workloads, and video streaming.
+USEFUL FOR STREAMING , making them a great fit for memory bandwidth-hungry applications.
+
+
+
+N1s are first-generation general purpose VMs and offer up to 96 vCPUs and 624GB of memory 
+For GPU workloads, N1 supports a variety of NVIDIA GPUs
+
+
+Second generation is highly recommneded.
+
+For flexibility, general purpose machines come as predefined (with a preset number of vCPUs and memory), or can be configured as custom machine types
+Custom machine types allow you to independently configure CPU and memory to find the right balance for your application,
 
 
 
 
-		
+Compute-optimized (C2) family:
+----------------------------------
+Compute-optimized machines focus on the highest performance per core and the most consistent performance to support real-time applications performance needs. 
+offering up to 3.8 GHz sustained all-core turbo, these VMs are optimized for compute-intensive workloads such as HPC, gaming (AAA game servers), and high-performance web serving.
+produce a greater than 40% performance improvement compared to the previous generation N1
+offer higher performance per thread and isolation for latency-sensitive workloads
+Compute-optimized VMs come in different shapes ranging from 4 to 60 vCPUs, and offer up to 240 GB of memory.
+You can choose to attach up to 3TB of local storage to these VMs for applications that require higher storage performance. 
+Whether you are optimizing for the number of queries per second or the throughput of your map routing algorithms
+ 
+ 
+ 
+ 
+Memory-optimized (M1, M2) family :
+--------------------------------------
+Memory-optimized machine types offer the highest memory in our VM family
+from 1TB to 12TBs of memory, and offer up to 416 vCPUs,
+these VMs offer the most compute and memory resources of any Compute Engine VM offering.
+They are well suited for large in-memory databases such as SAP HANA, as well as in-memory data analytics workloads
+M1 VMs offer up to 4TB of memory, while M2 VMs support up to 12TB of memory.
+making them a great choice for workloads that utilize higher memory configurations with low compute resources requirements.
+
+
+
+
+Accelerator-optimized (A2) family:
+-----------------------------------------
+designed to meet today’s most demanding applications such as machine learning and HPC. 
+A2 VMs were the first NVIDIA Ampere A100 Tensor Core GPU-based offering on a public cloud.
+Each A100 GPU offers up to 20x the compute performance compared to the previous generation GPU and comes with 40GB of high-performance HBM2 GPU memory.
