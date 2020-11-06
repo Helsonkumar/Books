@@ -245,6 +245,28 @@ A key benefit to combining CQRS and Event Sourcing is:
 
 
 
+SECURITY CHALLENGES UNIQUE TO THE CLOUD  : FROM IS APP DEV:
+==================================================================
+Nefarious users : lossing credentials in cloud
+Insecure APi and interfaces
+Data leakage via shared resources : SQL injection , Insufficient data access controls
+Traffic Hijacking  : Gain access to data , prevent legitimate access to data. Man in the middle or man in the browser(cross site scripting)attack reads unencrypted data.
+Malicious insider : Employees or Contractors or even the cloud vendor contractors : Prevent if by prevent access to data at rest , audit logs, auditing data access.
+Privacy issu : Exposing PII data. using Canary record to identify ian attakcer has hijacked our system would help preventing this issue.
+
+
+SSO in Cloud  :
+====================
+usually done via SAML and OpenID protocol
+federated Identiy is a SSO implementaation to provision a single point of credential provider so that user does not have to login to each application every time.
+Every app trusts the single Identity provider.
+Proxy based and Portal based SSO .
+
+
+
+
+
+
 
 
 
@@ -270,6 +292,19 @@ A key benefit to combining CQRS and Event Sourcing is:
    
    
 **  Always enable the API for any service which you need to access.
+
+
+** gcloud compute scp --verbosity debug C:\Users\DELL\Desktop\Helson_21.txt instance-1:/home/helsoncloud
+   gcloud compute scp --recurse instance-name:remote-dir local-dir
+   To transfer files using SCP, you must have a firewall rule on the network that your instance uses that allows SSH connections on port 22
+   
+   
+** We can package as Software in 3 ways :
+Container Image
+Boot Image
+Startup Script
+
+ 
 
 
 
@@ -343,12 +378,34 @@ Public Cloud
 Hybrid Cloud
 
 
+Regions and zones:
+=======================
+A region is a specific geographical location where you can host your resources.
+Regions have three or more zones.
+For example, the us-west1 region denotes a region on the west coast of the United States that has three zones: us-west1-a, us-west1-b, and us-west1-c.
+Regional and Zonal resources. ==> Reg res (static IP add,etc)can be used b any zones. But zonal res (zonl persistence disk)are restircted to specific zones.
+Other resources, such as images, are global resources that can be used by any other resources across any location. 
 
+Zone is connected to one or more clustres.
+
+ Choosing a region and zone is important for several reasons:
+ Handling failures :  In order to deploy fault-tolerant applications that have high availability, Google recommends deploying applications across multiple zones and multiple regions
+ Decreased network latency : 
+ 
+ India has only 3 zones under asia-south -region
+ 
+ Quotas : Certain resources, such as static IPs, images, firewall rules, and VPC networks, have defined project-wide quota limits and per-region quota limits
+
+
+
+
+
+ 
 
 Google Cloud products :
-=============================================================================================================
-                                         COMPUTE ENGINE  
-=============================================================================================================
+====================================================================================================================================================================================================================================================================================================================================================================================================================================================
+                                                                                                        COMPUTE ENGINE  
+====================================================================================================================================================================================================================================================================================================================================================================================================================================================
 
 VIRTUAL MACHINE RUNNIG IN GOOGLE CLOUD DATACENTER
 
@@ -381,7 +438,9 @@ Offer up to 32 vCPUs and 128GB of memory per node
 E2 machine types also leverage dynamic resource management,
 If you have workloads such as web serving, small-to-medium databases, and application development and testing environments 
 that run well on N1 but don’t require large instance sizes, GPUs or local SSD, consider moving them to E2.
-
+E2 has many variants like e2-standard-2 , 4,6,etc till 32 vCPu and 128GB
+We also have micro edition like e2-micro , e2-small , e2-medium
+These are a great fit for smaller workloads like micro-services or development environments that don’t require the full vCPU.
 
 
 N2 introduced the 2nd Generation Intel Xeon Scalable Processors 
@@ -405,6 +464,7 @@ USEFUL FOR STREAMING , making them a great fit for memory bandwidth-hungry appli
 
 N1s are first-generation general purpose VMs and offer up to 96 vCPUs and 624GB of memory 
 For GPU workloads, N1 supports a variety of NVIDIA GPUs
+
 
 
 Second generation is highly recommneded.
@@ -445,3 +505,200 @@ Accelerator-optimized (A2) family:
 designed to meet today’s most demanding applications such as machine learning and HPC. 
 A2 VMs were the first NVIDIA Ampere A100 Tensor Core GPU-based offering on a public cloud.
 Each A100 GPU offers up to 20x the compute performance compared to the previous generation GPU and comes with 40GB of high-performance HBM2 GPU memory.
+
+
+
+Instance Template  :
+--------------------------
+Use thatto quickly create VM instance with predefined config also for MIG (Managed Instance Groups)
+
+
+
+
+Performance-driven dynamic resource management in E2 VMs :
+-------------------------------------------------------------
+In particular, the consistent performance delivered by E2 VMs is enabled by:
+
+An evolution toward large, efficient physical servers
+Intelligent VM placement
+Performance-aware live migration
+A new hypervisor CPU scheduler
+
+Together we call these technologies dynamic resource management
+
+In dynamic res mangmt : The Virtual CPU  (vCPU) is mapped to physical CPU.
+So if the vCPU need is not there then the phy.CPu would be assigned to otjer vCPU
+So that we can effectively use the physcial resources dynamically and create more VM instance on lesser hardwar. There are alredy used for most of th goole services.
+But phy.res allocation would take time at some instance for the phy.res to get free. This is wait time.
+The wait time is mitigated as follows.
+
+An evolution toward large, efficient physical servers : live migration to new hardware
+Intelligent VM placement : finding the best location to add VM
+Performance-aware live migration : we can use live migration to transparently shift E2 load to other hosts in the data center.
+A new hypervisor CPU scheduler : The new scheduler provides sub-microsecond average wake-up latencies and extremely fast context switching.
+
+
+
+Instance groups:
+--------------------------------
+
+Let you operate apps on multiple IDENTICAL VMs. Vms with same configs.
+
+Managed Instance Groups : MIG services, including: autoscaling, autohealing, regional (multiple zone) deployment, and automatic updating.
+Unmanaged instance groups let you load balance across a fleet of VMs that you manage yourself.
+
+Managed instance groups (MIGs) are suitable for scenarios like these:
+Stateless serving workloads, such as a website frontend
+Stateless batch, high-performance, or high-throughput compute workloads, such as image processing from a queue
+Stateful applications, such as databases, legacy applications, and long-running batch computations with checkpointing
+
+MIG can be Regional or Zonal  : Regional has high vailability , Application-based autohealing,  Regional (multiple zone) coverage, Load balancing.
+								Scalability,  Automated updates of your software.
+								Support for stateful workloads like  such as databases, DNS servers, legacy monolith applications, or long-running batch computations with checkpointing.
+								Stateful MIGs preserve each instance's unique state (instance name, attached persistent disks, and metadata) on machine restart, recreation, auto-healing, or update.
+								
+MIG can be created using Instance Templates.
+
+Auto healing based on application state by doing health check. Noit just relying on running or failed state of VM instance.
+health checking signal that detects application-specific issues such as freezing, crashing, or overloading.
+If a health check determines that an application has failed on a VM, the group automatically recreates that VM instance.
+Health checking for autohealing causes MIGs to proactively replace failing instances, so this health check should be more conservative than a load balancing health check.
+If Auto Healing is not selected, Vms are recreated only when the Vm is stopped.
+
+A zonal MIG, which deploys instances to a single zone.
+A regional MIG, which deploys instances to multiple zones across the same region. 
+regional MIGs offer more capacity, with a maximum of 2,000 instances per regional group.
+use a regional group to protect against a zonal failure
+
+
+***Autoscaling policies include scaling based on CPU utilization, load balancing capacity, Cloud Monitoring metrics, or, for zonal MIGs, by using a queue-based workload like Pub/Sub.
+Auto scaling is based on Auto Scale policies : CPU utilization is the most used one. 
+
+
+# of Vms =  Sum of Actual CPU load
+           ------------------------
+		      Target CPU load  
+(in percentage like 60% : So if the CPu utlization goes beyond 60% then respective number of VM instance is launched to meet target load VM needs)
+** So lesser the targte load, then more VMs are launched.
+
+
+
+** Auto Updater is used for rolling out app change of versions without affecting the user faing systemn down time Useful for rolling updates and canary testing.
+1. Decide how many machine you want the updates to be applied.
+2. How many instance can be down while updating.
+3. Action  : restart or recreate : recreate a new Vm instance from the template or, restart the same instance with the updated template
+4. Update rollout Mode : Proactive  (Does the default rollout) . 
+          Oppurtunistic : creates a new instance with the updated version only when the system scales up. Else only the old version is served
+		  The old Vm instances are deleted when we need to scale down.
+5. Vm instance can be ReCreated or ReStarted.
+		  
+		  
+		  
+Diff between MAX_UNAVAILABLE & MAX_SURGE
+----------------------------------------------
+
+
+		  
+Rolling Update  : 
+----------------------
+Control how many VM updated at a time.
+Mode  : ProActive.
+Update only certain number of Vm at a time.
+Do the health check.
+Dont route the traffic to the updated instance untill they ensure running fine.
+
+Canary Update  :
+----------------------
+Useful for A/B testing.
+New template 30% 
+Old template 70%
+
+
+The ratio is fixed and maintained. The ratio is maintained even when the Vm instances scales.
+So do run the new template in production and collect statistics and apply the same for rest iof the Vm when the prod results are ok.
+
+
+Faster rollout without reduction in services:
+Go for this approach when you dont wnat any of the runnnig instances to be unavailbale due to update.
+New template to 100%
+Max unavilable Vm  : 0 : So no existing Vms are updated. Instead new instances are created with the new template.
+Max surge to 100%.
+Create 100% extra Vm ins the new template .
+Update all instances at a time. procative mode of deployment.
+Remove the old Vm only when the new VM pass the health check.
+
+
+How updater works with Autohealing
+---------------------------------------
+Say like Max unavailable is 2
+tghen only 2 instances are expected to unavailable while update.
+lets say one of the running Vm with the old template goes down after new temp is applied to 2 existing instaces.
+So for the second rollout batch , including one of the old Vm whihc is down, then updater simply apply the new changes only to one VM, to maintain the max unavailable count whihc is 2 in this case.
+If 2 Vms are auto healed no new updates are applied. Updater waits for the autohealing of theose 2 Vms to be completed.
+
+
+
+How Updater and Autoscaling works together:
+------------------------------------------------
+The auo scler comes into picture when the load increases with the existing VM.
+So the auoscler adds new Vm to meet the current load demand.
+However when we do some update to the existing 2 VMs, the load on the other eixtsing VMs increases. 
+but the auot scaler si aware that it is due to the update rllout that the load is spiking up, so it would wait for thw rollout to be completed and would not add any new instances until the rollout completes.
+Sp Updater and AutoScaler wokr s well together in this case.
+
+
+
+Updater evenly rollsout new version across the zones.Also it removes them evenly.
+---------------------------------------------------------------------------------------
+
+
+Updater and Load balancer:
+-----------------------------
+Worried about interuppting live user session?
+No new tarrfic are arouted to the existing Vm which is to be updated.
+The LB waits for live session to be complted and then wiats until the connection drain timeout (configured in the LB)
+Then it recerates a new VM instance and send the traffic to that updated instance.
+
+
+AutoScaling based on the task Queue:
+--------------------------------------------
+For batch we have producers and workers(like spring worker or processors)
+Each worker runs in a VM instances.
+the number of worker is decided dynamically by the Auo Scaler based on the number of items or task to be processed
+The Auto scaler shuts down all running Vm instances when no more task is pending to be processsed.
+
+
+		  
+
+
+Container Optimized OS is pre-installed with Docker. So you can menton the image name in the instance template so each instance in the MIG would be started with the container running.
+                 			
+							
+							
+Unmanaged instance groups :
+--------------------------------
+Unmanaged instance groups can contain heterogeneous instances that you can arbitrarily add and remove from the group		
+Unmanaged instance groups do not offer autoscaling, autohealing, rolling update support, multi-zone support, or the use of instance templates and are not a good fit for deploying highly available and scalable workloads.
+								
+ Use unmanaged instance groups if you need to apply load balancing to groups of heterogeneous instances, or if you need to manage the instances yourself.
+
+We 
+
+
+====================================================================================================================================================================================================================================================================================================================================================================================================================================================
+                                                                                                        CLOUD RUN  
+====================================================================================================================================================================================================================================================================================================================================================================================================================================================
+Cloud Run is the serverless compute service in GCP.
+It is primarily used to run cloud native Containarized apps.
+So any language code can be used to run those containers in Cloud Runtime.
+Cloud Code is an IDE plugin used to test locally and deploy remote of a containeraized app in cloud run. It creates a loal env with Scaffold and miniKube to test the containarized app locally.
+It uses either Dockerfile or BuildPacks (used to create a container out of an app without DockerFile) to create a Container .
+
+
+Cloud Run is available in two flavours : Fully Managed Cloud Run and Cloud Run on Anthos(hybrid cloud service)
+It simply Auto Scales.
+Pay per use.
+it providea a free https endpoint. Also we can attach our service to our won custom domain.
+
+Cloud Run has a limit of (1 hr ) in request processing limit. Beyond that U would get timeExceed exception.
+

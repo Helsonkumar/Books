@@ -5,6 +5,9 @@ git reset --soft/--hard origin/master
 (hard : removes ur local changes and resets ur commit ==> you will loose your changes in local after reset)
 
 
+git checkout branch_name
+(remotes/origin/branch_name)
+
 
 
 printing logs of commimt:
@@ -25,3 +28,19 @@ origin/master , origin/HEAD (denotes ur pos in remote repo)
 Undo a commit :
 ----------------------------
 git revert  <<commit-hash>>
+
+
+Rename a remote branch  :
+----------------------------
+We cannot rename it directly
+
+clone the remote project
+
+create a copy of the branch to be enamed with the correct name locally : 
+git branch -m oldname newname
+
+delete the old branch in remote and local  : 
+git push origin --delete old_branch_name
+
+push the new branch to remote  : 
+git push origin new_branch_name
