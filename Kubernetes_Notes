@@ -11,7 +11,7 @@ Kubernetes is a production-ready, open source platform designed with Google's ac
 
 **************************************************************************************************************************************************************************************** 
 Kubernetes Deployment:
-We need to create ""Kubernetes Deployement Configuration"". Once the deployment is done , the kubernetes Master schedules the app the run
+We need to create ""Kubernetes Deployement Configuration"". Once the deployment is done , the kubernetes Master schedules the app to run
 
 Kubernetes Deployment Controller continuously monitors those instances
  This provides a self-healing mechanism to address machine failure or maintenance.
@@ -58,7 +58,7 @@ PODS : Kubernetes Object
 PODs are relevant to Kubernetes.
 Apps encapsulated into Docker COntainer . Docker container are encapsulated within PODS.
 
-A POD can have multiple containers , but they must of diff types.
+A POD can have multiple containers , but they must be of  diff types.
 
 Python_app_container + Helper_app_container => In the same POD => PODS are created within a Kubernetes Node.
 
@@ -67,7 +67,7 @@ Python_app_container + Helper_app_container => In the same POD => PODS are creat
 YAML :
 =======================================
 Used to hold the config for Kubernetes.
-Alternative to JSon , xml
+Alternative to Json , Xml
 
 POD with YAML:
 ========================================

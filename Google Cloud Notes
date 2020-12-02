@@ -252,7 +252,7 @@ Insecure APi and interfaces
 Data leakage via shared resources : SQL injection , Insufficient data access controls
 Traffic Hijacking  : Gain access to data , prevent legitimate access to data. Man in the middle or man in the browser(cross site scripting)attack reads unencrypted data.
 Malicious insider : Employees or Contractors or even the cloud vendor contractors : Prevent if by prevent access to data at rest , audit logs, auditing data access.
-Privacy issu : Exposing PII data. using Canary record to identify ian attakcer has hijacked our system would help preventing this issue.
+Privacy issue : Exposing PII data. using Canary record to identify ian attakcer has hijacked our system would help preventing this issue.
 
 
 SSO in Cloud  :
@@ -263,7 +263,172 @@ Every app trusts the single Identity provider.
 Proxy based and Portal based SSO .
 
 
+Patterns for Scalable and resillient App : From GCP 
+==========================================================
+The flexibility to adjust the resources consumed by an app is a key business driver for moving to the cloud. 
+Scalability: Adjusting capacity to meet demand
+Tools  " Cloud Run  + GKE +Compute Engine with Auto scalers  +  Cloud Monitoring
 
+Resilience: Designing to withstand failures
+Deploying Apps across zones and regions
+
+
+
+Drivers :
+===========================================================
+Business drivers:
+-----------------------------------------------------------
+make ur systems Uptine efective even under unbalanced load
+Cost effective 
+Increase availability
+Time to market. be felxible
+
+
+Development Drivers:
+-----------------------------------------------------------
+Minimize time spent investigating failures
+Increase time spent on developing new features.
+Minimize repetitive toil through automation.
+Build apps using the latest industry patterns and practices.
+
+
+Operations drivers:
+-----------------------------------------------------------
+Reduce the frequency of failures requiring human interventio
+Increase the ability to automatically recover from failures.
+Minimize the impact from the failure of any particular component.
+
+
+
+Constraints:
+=====================
+Dependencies on hardware or software that is difficult to scale.
+Lack of skills or experience in your development and operations teams.
+
+
+Patterns and practices: https://cloud.google.com/solutions/scalable-and-resilient-apps
+==========================================================================================
+App lifecycle  : Infra design  + App Arch + Storage choices + deployment choices
+
+Three themes are evident in the patterns::
+Automation : Automating your infrastructure provisioning, testing, and app deployments increases consistency and speed, and minimizes human error.
+             Create immutable infrastructure through automation to improve the consistency of your environments and increase the success of your deployments.
+			 Infrastructure as code (IaC) is a technique that encourages you to treat your infrastructure provisioning and configuration in the same way you handle application code
+			 IaC minimizes human error and improves the consistency and reproducibility of your apps and environments.
+			 IaC increases the resilience of your apps.
+			 Cloud Deployment Manager lets you automate the creation and management of Google Cloud resources with flexible templates.
+			 Google Cloud also has built-in support for popular third-party IaC tools, including Terraform, Chef, and Puppet.
+	Create immutable infrastructure : 		 leads to more predictable deployments and rollbacks. 
+	                                         Immutable infrastructure mandates that resources never be modified after they're deployed. 
+	                                         It also mitigates issues that are common in mutable infrastructures, like configuration drift and snowflake servers
+
+			  
+Loose coupling     : Treating your system as a collection of loosely coupled, independent components allows flexibility and resilience.
+
+
+
+Data-driven design : Collecting metrics to understand the behavior of your app is critical.  
+                     Decisions about when to scale your app, or whether a particular service is unhealthy, need to be based on data. 
+					 Metrics and logs should be core features.
+
+
+Design for high availability:
+-------------------------------------
+Physically distribute resources : Compute Engine managed service 
+                                  GKE regional cluster
+Favor managed services :  regional or Zonal availabuility or replicTION MODEL DEPENDS ON CERTAINI SERVICES.
+Load-balance at each tier : For GKE and Compute engine we need to choose the load balancing . While for App Engine and Cloud Run LB is offered inherently.
+                            GCP gives layer 4 and layer 7
+Monitor your infrastructure and apps  : Use Cloud Monitoring for Inra Metrics gathering automatically. Many service does this automatically sending metrics data to CM.
+                                        but CM does not ofer App level monitoring. We may use some third part tools for this.
+    App monitoring	: How long it takes to execute a query. Use OpenCensus
+    Service Monotoring : 	monitor the interactions between the different services and components in your apps.
+	                        These metrics can help you diagnose problems like increased numbers of errors or latency between services.
+					        Use Istio : for sending servie level metrics to CM.provides insights and operational control over your network of microservices.
+                                        generates detailed telemetry for all service communications
+    End-to-end monitoring :  also called black-box monitoring, it reveals availability as perceived by the user.
+	
+	
+Balance cost and user experience : factors for Scaling Profile
+-----------------------------------------------------------------
+The cost-to-performance ratio might be different for a non-business-critical internal app where users are probably more tolerant of small delays. 
+Hence, your scaling profile can be less aggressive. In this instance, keeping costs low might be of greater importance than optimizing the user experience.
+
+
+Set baseline resources  :
+--------------------------
+extent of baseline resources is influenced by the type of app and traffic profile.
+
+
+Configure autoscaling   :
+--------------------------
+
+
+Minimize startup time:
+--------------------------
+creating custom images and instance templates can increase your deployment speed,
+it can also increase maintenance costs because the images might need to be updated more frequently. 
+
+
+Containerize your app:
+-----------------------------
+
+
+Optimize your app for fast startup:
+----------------------------------------
+
+
+Favor modular architectures:
+------------------------------------
+
+
+Aim for statelessness:
+----------------------------
+A stateless app or service does not retain any local persistent data or state. 
+A stateless model ensures that you can handle each request or interaction with the service independent of previous requests. 
+This model facilitates scalability and recoverability, 
+because it means that the service can grow, shrink, or be restarted without losing data that's required in order to handle any in-flight processes or requests.
+Statelessness is especially important when you are using an autoscaler, because the instances, nodes, or pods hosting the service can be created and destroyed unexpectedly.
+
+By ensuring clean separation of stateless and stateful services, you can ensure easy scalability for stateless services while adopting a more considered approach for stateful services.
+
+
+Manage communication between services:
+----------------------------------------------
+Service mesh
+
+Use appropriate database and storage technology:
+------------------------------------------------------
+NoSQL databases often choose availability over consistency.
+Whether a NoSQL database is appropriate often comes down to the required degree of consistency. 
+If your data model for a particular service does not require all the features of an RDBMS, and
+can be designed to be eventually consistent, choosing a NoSQL database might offer increased availability and scalability.
+
+Implement caching:
+----------------------
+Caching supports improved scalability by reducing reliance on disk-based storage. 
+Because requests can be served from memory, request latencies to the storage layer are reduced, typically allowing your service to handle more requests.
+In addition, caching can reduce the load on services that are downstream of your app, especially databases, allowing other components that interact with that downstream service to also scale more easily or at all.
+
+
+Testing  :
+-----------------
+Resiliencey and load testing of your app.
+Check the SRE book for all advice.
+
+Peak-season production readiness.
+
+
+
+
+
+SNOWFLAKE SERVERS:
+===========================
+This is more of the env inconsistency. This is addressed by IaC.
+Where the operation configs are hosted in a file. Easy to read and MODIFY and track env changes in a single point.
+both test and prod can be in sync.
+We use tools like Puppet and Chef.
+Any env with above anomilities is called as Snowflake Servers.
 
 
 
@@ -281,7 +446,7 @@ Proxy based and Portal based SSO .
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
                                                                                     GENERAL NOTES
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-** We can manipulate tge GCP res using gcloud SDK , API lib , Consle
+** We can manipulate the GCP res using gcloud SDK , API lib , Consle
 
 
 ** Cloud SDK must be installed in local machine to access a VM instance or any GCP service from local machine.
@@ -670,7 +835,6 @@ The Auto scaler shuts down all running Vm instances when no more task is pending
 
 		  
 
-
 Container Optimized OS is pre-installed with Docker. So you can menton the image name in the instance template so each instance in the MIG would be started with the container running.
                  			
 							
@@ -682,7 +846,6 @@ Unmanaged instance groups do not offer autoscaling, autohealing, rolling update 
 								
  Use unmanaged instance groups if you need to apply load balancing to groups of heterogeneous instances, or if you need to manage the instances yourself.
 
-We 
 
 
 ====================================================================================================================================================================================================================================================================================================================================================================================================================================================
@@ -698,7 +861,153 @@ It uses either Dockerfile or BuildPacks (used to create a container out of an ap
 Cloud Run is available in two flavours : Fully Managed Cloud Run and Cloud Run on Anthos(hybrid cloud service)
 It simply Auto Scales.
 Pay per use.
-it providea a free https endpoint. Also we can attach our service to our won custom domain.
+it providea a free https endpoint. Also we can attach our service to our own custom domain.
 
 Cloud Run has a limit of (1 hr ) in request processing limit. Beyond that U would get timeExceed exception.
+
+
+
+
+
+
+
+====================================================================================================================================================================================================================================================================================================================================================================================================================================================
+                                                                                                        GKE
+====================================================================================================================================================================================================================================================================================================================================================================================================================================================
+Open items:
+-----------------
+How k8s behave in multitennant env. Do we have to create new cluster for each app team? 
+What is the use of namespace.
+Do we need new deployments for new apps.Can we add a new item to the existing deplyment.
+Types of deployment strategies.
+What is OCI (Open Container Interface). Your container in k8s must be compatible to this interface.
+
+
+
+
+We have different release channels to manage and upgrade the Kubernetes cluster namely : Rapid  --> Regular --> Stable
+
+
+Connect to GKE cluster  :
+---------------------------
+gcloud container clusters get-credentials helson-kube-cluster1 --zone us-central1-c --project applied-pursuit-282708
+
+
+Create Deployment  :
+----------------------
+kubectl create deployment kube-deploy1 --image=helsonkumar/spring:spring_test
+
+
+Expose the deployment via a port :
+------------------------------------
+kubectl expose deployment kube-deploy1 --port=8080 --type=LoadBalancer
+
+kubectl get pods -o wide
+
+kubectl get replicaset
+
+Scale the pods :
+--------------------------------------
+kubectl scale deployment deply_name --replicas=3
+
+
+Delete a pod :
+------------------
+kubectl delete pod pod-name
+
+
+Set a diff image from V1 to V2 in the ruuning replica set :
+-------------------------------------------------------------
+kubectl set image deployment deplymnt_name container_name=docker_acc/repo_name:container_tag
+
+k8s would create a new replicaset for the newly set image.
+If it is valid image then the new rs would be effective and the old rs would be shutdown .
+If it is invalid then the old rs would still remain , but the new rs would be of zero running instances.
+
+Deloyment ==> on top we have RS ==> on top we have Pods
+
+A service is created when we expose our deployment.
+This holds a static IP to the external world . Wheras the pods get a diff Ip each.
+
+
+kubectl get services
+
+kubectl get componentstatuses
+
+
+Rollouts :
+=================
+kubectl rollout history deployment dep-name
+
+kubectl rollout undo deployment deply-name --to-revision=revision-number
+(This would restore the app version to the respective revisions)
+
+kubectl get deployment hello-world-1 -o yaml
+
+
+Describe  :
+=================
+kubectl describe pod_name
+would give u the name of the node in whihc pods runs, its container ,etc
+
+
+
+Multi Container Pods:
+=========================
+We use PODs instead of Containers in K8s bcz PODs is a wrapper and does some extra work like Liveness-checking probe and decide on Restart Policy.
+
+Running multiple container within a POD.
+In pre-container world this is equivalent to multiple process runnning in same server.
+These container are tightly coupled.
+They share the same IP and POTRT namspace.
+
+Then why cannot we bundle all process into one Container.?????
+"One Process Per Container" is the core principle.
+
+Else it would make it harder for troubleshooting . Logs from all process would be intermixed.
+So it would help in reutlizing the granualr containier by ther process. So always make it decoupled.
+
+
+Use Cases for Multi-Container Pods :
+========================================
+The primary purpose of a multi-container Pod is to support co-located, co-managed helper processes for a primary application
+Sidecar containers
+Proxies, bridges, and adapters
+
+While you can host a multi-tier application (such as WordPress) in a single Pod, the recommended way is to use separate Pods for each tier
+for the simple reason that you can scale tiers up independently and distribute them across cluster nodes.
+
+Communication between containers in a Pod:
+Shared volumes in a Kubernetes Pod . This is Kubernetes volume.
+They last until the POD stays alive.
+
+
+Inter Process Communication : Can be done via POSIX Shared memory stuffs.
+like Common queue for writer and reader container.
+
+But cons is : The container may start in unordered fashion
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

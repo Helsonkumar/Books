@@ -1,0 +1,29 @@
+Intellij Shortcuts :
+----------------------------
+Alt  + Enter  => Highlight the issue and get the fixes.
+
+F2  : Navigate to the next error
+
+Ctrl + E  : most recently used files
+
+shift  + shift  : Search everywhere1
+
+Ctrl  + B  : Declaration of the variable or field
+
+Alt + F7 : where the item is used
+
+shift + ctrl + enter  : Auto complete code
+
+ctrl  + alt  + L : Format the code
+
+shift + ctrl + A : Search for shortcuts
+
+
+F7  + F8 + F9   >  Step into + Step over  + Step to next BP
+shift  + F8   > Exit out.
+
+
+
+
+
+

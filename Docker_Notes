@@ -30,7 +30,9 @@ docker ps / docker ps -a ==> List downa all the conatiners
 
 docker stop container-id or container-name 
 
-docker rm container-id/name  => remove a container which would consume some resource even if it is not running
+docker rm container-id/name  ==> remove a container which would consume some resource even if it is not running
+docker container prune  ==> this would remove all containers whihc are not running
+docker system prune ==> it cleans unused containers, plus networks and dangling images.
 
 docker images  ==> list of available images in the host
 
@@ -41,7 +43,7 @@ docker pull image_name  ==> simply pulls the image and does not runs it as conti
 
 docker run ubuntu sleep 150 ==> launch an OS and kicks a sleep process for 100 sec.Afatre that it would exit.
 
-docker exec container-id <command to execute> => This would execute a commnd in the container.
+docker exec container-id <command to execute> => This would execute a commnd in the container. To connect to a running container
 e.g : docker exec ubuntu cat etc/*release*
 
 interactive and Detached mode:
@@ -63,9 +65,12 @@ docker run -p 5200:80 nginx
 then run:  curl http://localhost:5200 ==> this would give the default web page of the nginx Server.
 
 (docker run host_port:container_port image_name)
-Each docker is assinged an internal IP(accessible only form within the docker host or node)
-To expose the docker to the external clinet outside the docker host , we need to map the docker port to the port in the docker host
+Each docker is assinged an internal IP(accessible only from within the docker host or node)
+To expose the docker to the external client outside the docker host , we need to map the docker port to the port in the docker host
 
+Expose is just meant for docuemntation between the image owner and the user.
+
+But the actual app listeneting port must be mapped.
 
 
 Docker Volume mount:
@@ -90,13 +95,39 @@ docker logs container_name
 prints the logs of a container
 
 
+FROM  :
+-----------------------------
+This is used to create a base image .
+A base image is something which does not have any parent image. It is created from Scratch in general.
+A FROM decides a build stage. Its creats a image as result.
+A docker file may contain many FROm image whihc acts as dependent image to another one.
+
+
 
 DockerFile:
 -------------------------------
 We use dockerfile to build an image if our application.Like web apps, or spring boot apps ,etc
 
-Dockerfile format:
 
+Clone a ruing container with its state as a new image:
+-----------------------------------------------------------
+docker commit -m "commit msg" container_id repo:tag
+
+
+Docker deamon interaction :
+-------------------------------------
+We can interact with Docker deamon via its REST API service.
+A clinet in remote system can interact with docker demon in another system via the rest API service.
+we can manage all containers using this APi service.
+
+
+Change Docker image config from running container:
+-----------------------------------------------------
+docker commit --change='CMD ["apachectl", "-DFOREGROUND"]' -c "EXPOSE 80" c3f279d17e0a  svendowideit/testimage:version4
+This is handly to start the cloned image with diff config of the original container being cloned
+
+
+Dockerfile format:
 ########################################################################################################################################################################################################################
 INSTRUCTIONS | ARGUMENTS
 
@@ -302,5 +333,8 @@ Docker has 3 Network Types :
 3. Host ===> Here each docker container is connected to the host network. They would directly get attached to the host port. So no port mapping is needed to expose them to the external world.
 
 ****docker network ls ===> list the networks available in the docker
+
+
+
 
 

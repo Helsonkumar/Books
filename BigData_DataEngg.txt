@@ -14,3 +14,68 @@ https://ieeexplore.ieee.org/document/7334737
 Blog : https://towardsdatascience.com/query-data-effectively-in-hadoop-to-feed-your-hungry-data-science-ideas-c0a23fc4b9e0
 
 In query tool selection decisions, we should consider its performance in both big data and moderate data environment, in both batch mode and interactive mode.
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+For Knowledge :
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+*** TCP : UDP 
+
+Both are transport layer protocol
+Decides how the messgae between 2 servers are exchanged.
+
+TCP  : Transmission Control Protocol
+Establishes a connection first
+send SYNC -> Get SYNC ACK -> Send ACK back
+
+Message are sent in the form of packets.
+Each packet has a TCP header with items like Soruce prot,dest port, packe ID, Checksum of packet, Ack ID,Sequqnce of Packet
+Each packet is assigned a sequence number
+So the receiver artanges the message in the orderly manner, so the message stays reliable and uncorrupted
+For each packet an ACK si sent to the sender.
+if the sender does not receives the ACK for the packe then the packet is resent.
+
+Pros : Gurantees reliable msg delivery
+Cons : Latency
+
+e.g : HTML page from webserver
+
+
+
+UDP : User Datagram Protocol
+Does not worry about msg reliability. Msg packets can be lost
+
+Pros : Low latency since no ack for packet are involved
+Cons: Does not care about msg loss.
+
+E;g : Voice call
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+**** Ports :
+
+This is like post box for a house
+house is a server
+Each service in a server is exposed via a port.
+
+HTTP : 80
+HTTPS : 443
+SSH : 22
+FTP : 21
+DNS : 53
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+**** OSI model : We dont use this in practise. We use TCP/Ip in general
+
+All People Seems To Need Data Processing
+
+Application layer  : Generates the Data
+Presentation layer : Formats the data how the destination server would undertstand .Encrypts and decryptes the data.
+Session layer      : Establishes client server session
+Transport layer    : TCP UDP . adds data packets sequence number
+Network layer      : Adds source and destination network IP address
+Datalink layer     : Adds MAC address of Switch router stuffs
+Physical layer     : Ethernet and LAN stuffs
+
+
+
