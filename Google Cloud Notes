@@ -881,11 +881,69 @@ What is the use of namespace.
 Do we need new deployments for new apps.Can we add a new item to the existing deplyment.
 Types of deployment strategies.
 What is OCI (Open Container Interface). Your container in k8s must be compatible to this interface.
+Is our cluster spans across multiple availability zone or just available in only one zone?
 
 
 
 
 We have different release channels to manage and upgrade the Kubernetes cluster namely : Rapid  --> Regular --> Stable
+
+
+Pre container world:
+=======================
+Apps runnning in single server.
+resorces were not isolated,. That improper resource consumption by one app leads other to starve for resource.
+por resource isolation.
+Stop and restart the server for app deployment.
+Difficult to scale the apps.
+
+
+Apps in VM  :
+Better resource isolation.
+Easy of app management and scaling.
+But heavy, time to boot, high, resource cosumption.
+
+
+Apps in Container :
+Effective resource isolation and utilization
+Lightweight
+Agile development 
+Ease of deplyment and rollout since images are immutable.
+Individual containers can scale.
+Helps for automated CI CD pipelines.
+
+
+
+Kubernetes:
+================
+Provides a F/W to run the containarized app effectively.
+Makes ur system more responsive : Resilient and Scalable.
+Easy Rollout and Rollbakc: Can decide the state of application.
+Easy monitoring 
+Easy CI CD
+
+Service discovery and load balancing 
+Storage orchestration : user choice of storage can be used.
+Automated rollouts and rollbacks 
+Automatic bin packing  : define the resource needed for a container.
+Self-healing
+Secret and configuration management
+
+
+Notes :
+========
+Deployment and Services are 2 different objects. They both are independent.
+
+A Single service can be tied to two diff deployments
+The selector labels in the service defenition must be updated with the proper labels.Thats it. 
+Replcaset would not manage the deplyment. 
+Only the deployment would manage the deployments
+
+Upgrading app without Deployment object would fail the upgrade operation
+
+
+
+
 
 
 Connect to GKE cluster  :
@@ -985,9 +1043,70 @@ They last until the POD stays alive.
 Inter Process Communication : Can be done via POSIX Shared memory stuffs.
 like Common queue for writer and reader container.
 
-But cons is : The container may start in unordered fashion
+But cons is : The container may start in unordered fashion.
 
 
+YAML:
+======================
+kubectl apply -f config_file.yaml
+
+kubectl delete all -l label_name : to delete all resources in a deployment
+
+label filters : Equality based and Set based filters:
+---------------------------------------------------------
+kubectl get pods -l environment=production,tier=frontend
+kubectl get pods -l 'environment in (production),tier in (frontend)'
+
+
+Cluster Objects:
+=====================
+Nodes  : kubeltes register to APi server to be identified as healthy node
+
+A pod can be luanched in a Node subjectively using node-selector option.
+
+Marking a node as unschedulable prevents the scheduler from placing new pods onto that Node, but does not affect existing Pods on the Node. 
+This is useful as a preparatory step before a node reboot or other maintenance.
+****kubectl cordon $NODENAME
+(Node gke-helson-k8s1-default-pool-39e6cfaf-0wlr status is now: NodeNotSchedulable)
+Node would be Ready in status, but scheduling would be disabled.
+A cordoned node would be even removed from load Balancer.
+
+
+***kubectl uncordon <node-name>
+Set it to Scheduling on.
+
+
+Unhealthy Node  : NodeReady status : ConditionUnknown or ConditionFalse
+
+***Taints : it is a property which prevents from launching a pod in a node.
+it is just a sttaus set for an object by Controller like Noexecute, NotReady,NonSchedulable ,etc
+
+
+
+Nodes condition  : Ready , Memorypressure , PIDPressure , NetworkUnavailable, DiskPressure
+
+the node controller has not heard from the node in the last node-monitor-grace-period (default is 40 seconds)
+
+pod.eviction.timeout = def : 5 Min: decides till what time a controller can wait for response from node.
+If this time is execced then all the pods in that unresponsive node would be deleted 
+
+Node contorller : Maintains a list of nodes in the cluster
+Health checks the nodes by pinging it every ********--node.monitor-period
+ConditionUnknown would be set if the node is identified to be irresponsive
+
+The kubelet serves updates the status of the Node.
+The default interval for NodeStatus updates is 5 minutes
+
+the node controller limits the eviction rate to --node-eviction-rate (default 0.1) per second
+it won't evict pods from more than 1 node per 10 seconds.
+
+
+
+
+Controllers:
+==================
+Think of them as a Control Loop(like Thermostat: to bring down the room teperature to desired state)
+So controllers interact with API server to know abt the current state of the cluster and ensures that that desired state is achived.
 
 
 

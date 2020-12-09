@@ -164,3 +164,196 @@ UPdate records are dripped in the form of events in to the kafqka Queue and the 
 
 
 
+######################################################################################################################################################################################################################################################
+
+Dist System Architecture: Sunu Sasidharan
+----------------------------------------------------------
+youtube.com/watch?v=6pjGuuGsqxE
+
+Large Scale System(LSS)  is charactreized by  :
+-------------------------------------------
+Huge Data
+Large Concurrent Users
+Scalability Requirement
+Throughput Requirement
+
+These must be addressed in any LSS
+
+Challenges in LSS:
+------------------------
+Role of Arch is multi faceted
+Understand the Domain first to make a Arch decisionProd owner and stake onwer must be involved
+They have to undertsand how integration must be done and how it can done iteratively
+
+Compliance F/W : Landscape is fragemented
+GDPR + HIPPAA + SOC + PCi DSS
+They have overlap. This must be considered from the beginning
+
+R/D for new tools and how they can be mainstreamed in Dev work
+
+
+Dist System:
+----------------
+Why ?
+To address the aboe challenges
+Adv : Take adv of cloud native features
+
+Challenges: Understand Domain
+
+Way to do DS : M/S/WChallenges: Draw boundries
+System must work cohesively together
+So understand the Domain.
+Undertsand CAP theorem
+
+Styles for Implementing CAP theorem:
+Eventual Consistency. High Availability ==> Use Kakfa for m/S interaction with messages.it can scale well
+Strict Consistency . But low availability
+Design M/S accordingly. Check where your business model si aligned.
+
+Does the order of the message processing in queue matters ? It can scale well if order does not matters
+fault tolerant : How resilient is your syste. 
+Have U considered all possible cases.
+
+Event Sourcing : U can have immutable system.
+U can play back the message U arrive latest state.
+
+Event Sourcing  + message queue  ==> Resilient System
+
+Challenges: Eventual Consistency + Message Processing Order
+
+
+Microservice Architechture:
+================================
+How to ensure M/S boundries.
+it is not easy  : Keep improving the bounries.
+Understand the DomainU can use Doamin Driven Design
+
+Approach : Start with Monolithic System
+Have /s within the monolith.
+Once stable : Break the monolith into m/S
+Have Seperation within the domain
+
+Multiple team : Have the Lean team (Cross fucntional team : Lean methodologies)
+each team design its won microservices
+ Conways' law
+ Dedicated team for each microservices
+ Enhanced velocity of delivery
+ 
+Contracts between the services must be defined quiet essesntially.
+
+Monitor , Logging , Tracing
+
+Containerization : Observability
+Isynga , Pager duty
+
+Test Driven Development:
+TDD must be adopted with BDD .
+Should be like an essential Cultural things
+
+Processing Workloads :
+=========================
+CPU intensve  : Data transformation ,etc
+IO intensive  : DB interaction , disk write,etc 
+
+Node Js : event loop based proessing for low IO 
+Avoids thread switching
+
+Workload type of M/S must be considered.
+
+Non-Functional Requirements
+--------------------------------
+Security + Performance  + Browser Compatibility + Accessibilty testing
+
+Securtity  : Static Code analysis
+Container with right patching + Cv tc
+Vulnerabilittes scanner
+
+Iac : Terraform , Ansible
+helps patching system  : Blue Green deployment
+
+Performance driven development
+
+Concurrent testing
+
+Observeability : Graffana dashboard ==> eahc M/S owner get a metric of their sercvice and take action accordingly
+
+Distributed Log Tracing : LogStash or FluentD
+
+FluentD collects the log ==> Stores in Elastic Search  ==> Kibana visualizes the monitoring data
+
+In Nutshell : You must have 
+**Dist System Design and fucntionality
+**CAP Theorem
+**Workloads
+**Tooing
+**Development methodologies
+
+######################################################################################################################################################################################################################################################
+
+Scaling a Db  :
+Reason  : Too much load 
+
+**Replicate the Data across multiple Instance
+Master has all Writes and Slaves has all reads
+Write cannot scala since master alone handles it
+Replication lag due to delay in writing data
+
+
+Reason  : Too much Data
+Go for Sharding
+Cons : Complex Queries like Range queries
+       Joins become Difficult
+	   
+when to shard a Db :
+------------------------
+Before sharding we can do multiple things before that
+
+
+Db Partitioning and sharding :
+=============================
+Sharding can be doen at Application level(redis and memcached) or at Db level (MongoDb, Hbase , Cassandra)
+
+
+Partitioning Method:
+------------------------
+***Vertical Partitioning:
+Based on some column (Hive partitioning)
+It means splitting a large table into multiple smaller chucks of specific column value.
+
+
+**Horizontal Partitioning:
+Sharding
+Splitting based on Rows ange on a key value.
+
+
+But how the routing of request is done:
+=========================================
+Algorithmic Sharding : @ Application level using Consistent hashing algorithm : Memcached Db uses this to some extent
+
+Dynamic Sharding  : A lookup service decides which DB the request must be routed to. But this introduces the Single Point of Failure
+
+Data Partitioning Problem:
+-----------------------------
+Shard Allocation Imbalance :
+Hot Key : A specific server with a key is frequrntly accessed makes it overloaded.
+Data redistribution  : probelm while doing data redist while adding or removing servers
+May require data denormalization  : Due to inefficient joins
+transaction is not possible across shards.
+
+Vitess.io : A database clustering system for horizontal scaling of MySQL
+ technology used to make the routing decision 
+ 
+ 
+	   
+
+ 
+
+
+               
+
+
+
+
+
+
+

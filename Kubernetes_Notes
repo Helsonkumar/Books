@@ -14,8 +14,8 @@ Kubernetes Deployment:
 We need to create ""Kubernetes Deployement Configuration"". Once the deployment is done , the kubernetes Master schedules the app to run
 
 Kubernetes Deployment Controller continuously monitors those instances
- This provides a self-healing mechanism to address machine failure or maintenance.
- 
+This provides a self-healing mechanism to address machine failure or maintenance.
+
  
 Need for Docker:
 Hypervisor : Multiple OS on a kernel. 
@@ -24,7 +24,7 @@ Hypervisor : Multiple OS on a kernel.
 Docker is basically meant to run multiple containarized apps on the same kernel.
 Mainly invented to avoid the dependency issues with the applications.
 
-"""" Kubernetes: Is the Container Orchestration software used to manage the docker containers and provides the auot scale features."""""
+"""" Kubernetes: Is the Container Orchestration software used to manage the docker containers and provides the auto scale features."""""
 
 We have containers running within nodes.
 
@@ -35,14 +35,18 @@ When we install Kubernetes we indirectly install the following:
 2. etcd -> Reliable dist KV store. Implements the lock within the cluster to avoid conflicts.
 3. Scheduler -> Distributes the works for containers across multiple nodes.
 4. Controllers -> Does the health check of  when containers and nodes go down.
+----above all makes the COntrol Panel
+
 5. Container Runtime -> S/W used to run containers(Docker). We have other container runtime like rocket, CRI-O
 6. Kubelet -> Runs in each nodes of the cluster.Ensures that the cotainer runs in the nodes as expected.
+7. Kube Proxy
+
 
 ********************************************************************************************
 
-Master : API Server + etcd (KV store ) + Scheduer + Controllers
+Master : API Server + etcd (KV store ) + Scheduer + Controllers : Control Panel
 
-Worker : Kubelet + Container Runtime(Docker)
+Worker : Kubelet + Container Runtime(Docker) + Kube Proxy 
 
 ********************************************************************************************
 
@@ -74,8 +78,8 @@ POD with YAML:
 Basically used to configure Kubernetes objects like PODS, Containers, Services, etc
 
 *****************************************************************************************
-pod-definition.yml :
-    apiVersion : "Vresion of the kubernetes we use: V1"
+pod-definition.yml : holds Spec and Status(updated by Kube in real time)
+    apiVersion : "Version of the kubernetes API we use: V1"  bcz we use only API server to interactwith Kube objects
     kind       : " POD / Service / ReplicaSet / Deployment"   
     metadata   :
 	   name: myapp-pod
@@ -155,7 +159,7 @@ spec:
       matchLabels:
          type: frontend
 
-**matchlables a: actuall debotes any pods created outside this replica-set definition file to be monitored by this replicaset.
+**matchlables a: actually denotes any pods created outside this replica-set definition file to be monitored by this replicaset.
 
 *************************************************************************************************************************************************
 Deployment:
@@ -165,7 +169,7 @@ A replciaset encapsulates a POD
 A Pod encapsulates a conatiner.
 
 Deployement : is what used in production to create PODs 
-	 To enable the update of PODs (like from V1 to V2) feasible afor all instances one by .This is calling """Rollout Update"""
+	 To enable the update of PODs (like from V1 to V2) feasible for all instances one by one.This is calling """Rollout Update"""
      To auto undo the changes applied, if something goes wrong.
 	 To pause the container and apply the changes.
 	 These sort of features are given by the deployment.
@@ -223,7 +227,7 @@ kubectl rollout status deployment/myapp-deployment
 
 kubectl rollout history deployment/myapp-deployment
 
-kubectl rollout undo deployment/myapp-deployment ==>> This rollbacks all changes applied.
+kubectl rollout undo deployment/myapp-deployment --to-revision=3 ==>> This rollbacks all changes applied.
 
 *****************************************************************
 ** Even if U give any wrong version for a image in the deplyment definition file, the kubernetes would not proceed to upgrade the existing instances untill
@@ -237,7 +241,7 @@ Networking in Kubernetes:
 --------------------------------
 Each Nodes within a cluster has unique IP address.
 Each Pods within the Kubernetes node has Static IP like : 10.244.1.0
-So each pods within a Node are gropued within this attaically assigned IP.
+So each pods within a Node are grouped within this statically assigned IP.
 like 10.244.1.94 , 10.244.1.96
 But this leads to pods with same IP address in diff nodes.
 So we  need to establish some netwoeking or routing solutions to get unique IP address for any pods within a nodes.
@@ -332,10 +336,10 @@ Operational Metrics features are auto provided in openshift.But in mananged Kube
 Service discovery is feasible with UI(with sevice catalague feature) given by Openshift. This is not available in managed Kubernetes.
   
 Openshift uses Routes. Kubernetes use Ingress.
-Like Deployments, we have DeplymentConfig in Oepnshift. 
+Like Deployments, we have DeplymentConfig in Openshift. 
 via Dep.Config we can use hooks to prepare ur env for update.
 Set trigger to auto deploy when new changes in image is detected.
-But concurrent update is not availabel thru Dep.Config.
+But concurrent update is not available thru Dep.Config.
 
 *************************************************************************************************************************************************
 
