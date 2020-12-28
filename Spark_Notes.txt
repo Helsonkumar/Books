@@ -19,7 +19,7 @@ How catalyst work:
 -------------------- 
 Analysis Phase:                                           Optimization Phase:                     Physical Planning                              Code Generation  (Converst the Physical plan into specialized Java code )
 ====================                                     =======================                 =========================                    =========================
-Unresolved Logical Plan  ===> Resolved Logical Plan ===>  OPtimzed Logical Plan   ===> Physical plans ===> Cost based model ==> Selected Physical plan       ====> RDD  ====> Result
+Unresolved Logical Plan  ===> Resolved Logical Plan ===>  Optimzed Logical Plan   ===> Physical plans ===> Cost based model ==> Selected Physical plan       ====> RDD  ====> Result
 
 
 Physcial plan  : Cost based model  : Its does smoething like Join Selection
@@ -69,9 +69,6 @@ Delat lake  : Gives ACID model on Spark data. It is an open soruce storage layer
  
  
 
-
-
-
 AQE  : Adaptive Query Execution in Spark 3.0
 =================================================
 It simply optimizez the layer between logical and Physical plan dynamically by using the runtime metrics of the stages involved in the spark pipeline.
@@ -97,3 +94,261 @@ spark.sql.adaptive.advisoryPartitionSizeInBytes
 where the first represents the starting number of partitions (default: spark.sql.shuffle.partitions), 
 the second represents the minimum number of partitions after optimization (default: spark.default.parallelism), and 
 the third represents the “suggested” size of the partitions after optimization (default: 64 Mb).
+
+
+
+
+
+Spark On Kubernetes: as of spark 3.0.1 version
+=========================================================
+
+To make the most of Apache Spark, we need two things:
+A distributed storage to store the data
+A scheduler to run the Spark executors across a computing cluster
+People have been doing this differently on-premise and cloud. With on-premise, most use Spark with Hadoop, or particularly HDFS for the storage and YARN for the scheduler. While in the cloud, most use object storage like Amazon S3 for the storage, and a separate cloud-native service such as Amazon EMR or Databricks for the scheduler. 
+
+
+
+
+Reason  :
+-------------
+
+In general Seperation of Storage and Computation is what needed. This is somewhat addressed by containerized apps in kubernetes.
+
+
+The primitives offered by k8s like namepsaces, pods, deployment, raset,etc has been reason for running spark on k8s instead of yarn.
+
+***Simpler Administration
+    Kubernetes allows for the unification of infrastructure management under a single type of cluster for multiple workload types. You can run Spark, of course, 
+	but you can also run Python or R code, notebooks ,and even webapps. 
+	In the traditional Spark-on-YARN world, you need to have a dedicated Hadoop cluster for your Spark processing and something else for Python, R, etc.
+
+Isolation, meaning that you can prevent workloads running in the cluster from interfering with each other because they will remain in their own "namespaces.” 
+
+
+*** Better resource management,
+    the scheduler takes care of picking which node(s) to deploy the workloads on in combination with the fact that in the cloud, scaling a cluster up/down is quick and easy 
+
+
+***Easier Dependency Management across Workloads
+   Managing dependencies in Hadoop is time-consuming: packages have to exist on all nodes in a cluster, 
+   makes isolation (i.e., making different versions of the same software - like TensorFlow 1.5 and TensorFlow 2.0 - coexist on the same node) difficult and updating environments challenging.
+   the hassle of maintaining a common dependency for all workloads running on a common infrastructure is removed due to docker containers with their onw dependencies.
+   
+   
+***More Flexible Deployment
+   If you’re doing Enterprise AI and want to start moving data storage to the cloud (or have already started doing so), the idea of vendor lock-in can be very scary. 
+   That’s why today, more and more businesses are taking a cloud-agnostic approach.
+   Running Spark on Kubernetes means building once and deploying anywhere, which makes a cloud-agnostic approach scalable.
+   We dont have to refactor our CI/CD pipelines for each env like EMR, DataProc , HDInsight
+   
+   
+*** It's Cheaper
+       
+	   
+	   
+Pitfalls:
+-----------
+
+	   
+
+Spark-submit is added with support to Kubernetes since v2.3. Supports both cluster and client(since 2.4) mode
+But Kubernetes operator provides a lot more feature owing Monitoring and management.
+Although easy to use, spark-submit lacks functionalities like supporting basic operations for job management. 
+ Thus, users will have to manage their jobs via the Kubernetes tools like kubectl in this case.
+ 
+The Spark driver pod uses a Kubernetes service account to access the Kubernetes API server to create and watch executor pods.
+By default, the driver pod is automatically assigned the default service account in the namespace specified by spark.kubernetes.namespace
+if no service account is specified when the pod gets created else it uses : spark.kubernetes.authenticate.driver.serviceAccountName=<service account name>.
+
+$ kubectl create serviceaccount spark
+To grant a service account a Role or ClusterRole, a RoleBinding or ClusterRoleBinding is needed. 
+
+Note that a Role can only be used to grant access to resources (like pods) within a single namespace,
+whereas a ClusterRole can be used to grant access to cluster-scoped resources (like nodes) as well as namespaced resources (like pods) across all namespaces.
+
+ 
+spark-submit vs operators:
+-------------------------------
+Client mode :spark-submit directly runs the driver at the spark-submit submission client side or within Pod and the executors run as pods in the kubernetes cluster
+Cluster-mode : spark-submit delegates the job submission to kuberntes spark backend service whihc runs the driver in a pod.
+
+We dont need spark pre-installed in the k8s nodes, since the spark version is decided by the spark-submit we use and the requireed spark core version is actually bundled on fly in the respective containers.
+**So we can run app-spark2.4 and app-spark2.5 version simultaneously without any issues in the same k8s cluster in the same namepsace as well.
+
+
+
+Dependency management in k8s :
+------------------------------------
+The application dependencies: Can be done in 2 ways
+    They can be bundled into the container image itself (like uber jar)
+	They can be passed as SPARK_EXTRA_CLASSPATH var inside the dockerfile used to build the application image or via local:/// . These app dependencies would be downloaded and added to driver pods classpath during run time.
+	
+	
+
+
+The driver then interacts with K8s api-server for creation and management of the executors pods.
+In spark submit everyting is driven by configuration properties (--conf)
+
+spark-submit can be directly used to submit a Spark application to a Kubernetes cluster. The submission mechanism works as follows:
+It comminucates with the k8s cluster thru a K8 clinet interface which can be customized
+
+
+Spark creates a Spark driver running within a Kubernetes pod.
+The driver creates executors which are also running within Kubernetes pods and connects to them, and executes application code.
+When the application completes, the executor pods terminate and are cleaned up, but the driver pod persists logs and remains in “completed” state in the Kubernetes API until it’s eventually garbage collected or manually cleaned up.
+
+POD Template :
+----------------
+Spark can be provided with config for Driver and Executor pods using pod template.
+
+spark.kubernetes.driver.podTemplateFile 
+spark.kubernetes.executor.podTemplateFile
+
+the pod templates are used for the customization of driver and executor pods.
+A spark pod can contain spec for more than one container.
+ To allow the driver pod access the executor pod template file, the file will be automatically mounted onto a volume in the driver pod when it’s created.
+
+
+Using Kubernetes Volumes:
+----------------------------
+Spark on Kubernetes in general interacts with Object Storage like GCS or AWS S3 or any other form of NFS for data storage read and writes.
+The HDFS integration is still experimental.
+So the IO is not effective here.
+Also spark uses some scrtach psace to store the tmpFS for spill files.
+Using DockerFS is slower.///So we use Volumes to hold these temp files
+
+
+Starting with Spark 2.4.0, users can mount the following types of Kubernetes volumes into the driver and executor pods:
+***hostPath: mounts a file or directory from the host node’s filesystem into a pod.(like host SSD)
+***emptyDir: an initially empty volume created when a pod is assigned to a node. (This is part of nodes volume(temp volume)
+             By default emptydir is created for each pod.
+			 emptyDir volumes use the nodes backing storage for ephemeral storage by default,
+			 
+***persistentVolumeClaim: used to mount a PersistentVolume into a pod.
+***RAM : Even RAM can be used for any diskless nodes.. But this is dangerous of loosing spill data.
+         This part is alos considered while allocating memory for pods.
+		 
+--conf spark.kubernetes.driver.volumes.[VolumeType].[VolumeName].mount.path=<mount path>
+
+
+
+Local Storage  :
+---------------
+spark.local.dir  : Used for data spills during shuffles.
+
+
+Using RAM for local storage:
+-------------------------------
+For example if you have diskless nodes with remote storage mounted over a network, having lots of executors doing IO to this remote storage may actually degrade performance.
+In this case it may be desirable to set spark.kubernetes.local.dirs.tmpfs=true in your configuration which will cause the emptyDir volumes to be configured as tmpfs i.e. RAM backed volumes.
+
+
+Introspection and Debugging:
+---------------------------------
+Accessing Logs : kubectl -n=<namespace> logs -f <driver-pod-name>
+                 or used Kubernetes Dashboard
+
+
+Accessing Driver UI : $ kubectl port-forward <driver-pod-name> 4040:4040
+Then, the Spark driver UI can be accessed on http://localhost:4040.
+
+
+Debugging :  often, the best way to investigate may be through the Kubernetes CLI.
+$ kubectl describe pod <spark-driver-pod>
+$ kubectl logs <spark-driver-pod>
+
+***Finally, deleting the driver pod will clean up the entire spark application, including all executors, associated service, etc. 
+***The driver pod can be thought of as the Kubernetes representation of the Spark application.
+
+
+Kubernetes Features
+============================
+Configuration File :
+---------------------
+
+
+Context  :
+----------- 
+Used to switch between multiple k8s cluster
+
+
+
+Namespaces :
+--------------
+ Namespaces are ways to divide cluster resources between multiple users (via resource quota).
+ Kubernetes allows using ResourceQuota to set limits on resources, number of objects, etc on individual namespaces. 
+ 
+ 
+
+
+
+
+
+Spark Application Management:
+=================================
+Users can kill a job by providing the submission ID that is printed when submitting their job. 
+ The submission ID follows the format namespace:driver-pod-name.
+ 
+ $ spark-submit --kill spark:spark-pi-1547948636094-driver --master k8s://https://192.168.2.8:8443
+ $ spark-submit --status spark:spark-pi-1547948636094-driver --master  k8s://https://192.168.2.8:8443
+
+
+
+Future Work:
+------------------
+There are several Spark on Kubernetes features that are currently being worked on or planned to be worked on. Those features are expected to eventually make it into future versions of the spark-kubernetes integration.
+
+Some of these include:
+
+Dynamic Resource Allocation and External Shuffle Service
+Job Queues and Resource Management
+
+
+
+
+
+
+
+
+
+
+
+
+
+Spark Opeartors:
+---------------------
+based on operator pattern.
+Which encapsulates the domain knowledge of running spark app with custom resources and the defines controllers for those resources.
+
+The Operator defines two Custom Resource Definitions (CRDs), SparkApplication and ScheduledSparkApplication.
+The later is for submitting spark jobs as per a timly schedule like schdule cron job
+the Operator also gives you the ability to mount volumes and ConfigMaps to customize your pods.
+In Operator everytiing is defined in the form of yaml file and have them deployed.
+
+
+So we need to have the Spark Opeartor installed in the kubernetes cluster first.
+So it creates a custom controllers.
+The job definition in the yml file defines the joark job object.
+Once the yml file is submitted the operator calls the custom controller to create a Spark job object from the given job def in yml file
+And then the componenets within the operator submits the spark-submit command.
+The pods events are monitored by the component within the Opeartor pod.
+
+
+What Is A Mutating Admission Webhook?
+The webhook supports mounting ConfigMaps in Spark pods, which can come in handy in the following scenarios:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

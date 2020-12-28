@@ -343,6 +343,42 @@ transaction is not possible across shards.
 Vitess.io : A database clustering system for horizontal scaling of MySQL
  technology used to make the routing decision 
  
+
+Consistent Hashing  :
+============================
+
+Consistent hashing helps in DB Sharding.
+
+Imagine Hashtable gettting dirtibuted across multiple servers.
+A given key is mapped to one of the servers in the given list of servers is derived thru  : hash(key) / N ==> N is the number of given servers.
+But when we add or remove any of the servers then the keys must be remapped which is cost effective.
+Consistent hashing is for rescue.
+Here the hash function is independent of the number of servers.
+So the keys and the servers are treated as Ring objects.
+Each object(Keys and servers) is hashed and the hash value is mapped to a degree in the circle.
+value of db keys and Ip addrs of the servers are hashed.
+Each Db key is stroed in the immediate next server in the hash ring.
+So when we add or remove a server from the ring , the only affcetd keys which must be remapped are the one which belong to the one whihc adjacent to the server which is removed or added.
+The Rest of the DB keys do not have to be rempapped.
+This maked your system highly available and less error prone.
+
+
+
+
+Scaling Web apps:
+========================
+In egenral a Web app server has a limitation to serve the number of connectiosn per second at a time.
+
+it is driven by factors like Number of sockets..cores per socket....Threads per cores
+The latency of app is driven by the time in web app server and the time spent in DB.
+
+No of user request served by a core per second * number of cores. 
+
+
+
+
+
+
  
 	   
 

@@ -882,8 +882,9 @@ Do we need new deployments for new apps.Can we add a new item to the existing de
 Types of deployment strategies.
 What is OCI (Open Container Interface). Your container in k8s must be compatible to this interface.
 Is our cluster spans across multiple availability zone or just available in only one zone?
+Yunikorn scheduling technique + Gang Scheduling (Instead of scheduling the pods one by one on FIFO basis, launch apps based on applications)
 
-
+**Pod Topology Spread Constraints:
 
 
 We have different release channels to manage and upgrade the Kubernetes cluster namely : Rapid  --> Regular --> Stable
@@ -921,6 +922,9 @@ Makes ur system more responsive : Resilient and Scalable.
 Easy Rollout and Rollbakc: Can decide the state of application.
 Easy monitoring 
 Easy CI CD
+
+In general k8s is well suted for Stateless apps instead of Stateful apps(otherwise called as statefulset in k8s world) like DB. (Software which runs the DB)
+
 
 Service discovery and load balancing 
 Storage orchestration : user choice of storage can be used.
@@ -964,6 +968,12 @@ kubectl get pods -o wide
 
 kubectl get replicaset
 
+kubectl get pods --all-namespaces --sort-by=.spec.type
+
+kubectl top node
+
+
+
 Scale the pods :
 --------------------------------------
 kubectl scale deployment deply_name --replicas=3
@@ -991,6 +1001,12 @@ This holds a static IP to the external world . Wheras the pods get a diff Ip eac
 kubectl get services
 
 kubectl get componentstatuses
+
+
+***Kill a specific container alone within a POD :
+-----------------------------------------------------
+kubectl exec -it [POD_NAME] -c [CONTAINER_NAME] -- /bin/sh -c "kill 1"
+
 
 
 Rollouts :
@@ -1108,19 +1124,201 @@ Controllers:
 Think of them as a Control Loop(like Thermostat: to bring down the room teperature to desired state)
 So controllers interact with API server to know abt the current state of the cluster and ensures that that desired state is achived.
 
+Job Controller and Deployment controller are example of builtin croller running within the Contorller-manager within COntrol panel
+
+Cloud Controller Manager:
+The cloud-controller-manager is a Kubernetes control plane component that embeds cloud-specific control logic.
+lets you link your cluster into your cloud provider's API
+
+
+Node Controller     : Initialize a Node object for each server that the controller discovers through the cloud provider API.
+Route Controller    : Configuring routes in the cloud appropriately so that containers on different nodes in your Kubernetes cluster can communicate with each other.
+Service Controller  : Services integrate with cloud infrastructure components such as managed load balancers, IP addresses, network packet filtering, and target health checking. 
+
+Container runtimes  : Kubernetes supports several container runtimes: Docker, containerd, CRI-O
+CRI-O : Kubernetes specific one Container Runtime Intreface
+
+An image is cached by the Node when it is pulled.
+The default Image pull policy is **IfNotPresent**
+When imagePullPolicy is defined without a specific value, it is also set to Always
+
+
+Configuring nodes with Pvt registry secrets :
+----------------------------------------------
+generate secret for a registry and add that to each namespace.
+
+
+Container environment:
+==========================
+The hostname of a Container is the name of the Pod in which the Container is running.
+
+You can set a different RuntimeClass between different Pods to provide a balance of performance versus security.
+
+Hooks are specialized handlers(Code with unique set of action to be made) used during the specific container lifecycle management process.
+like PostStart , PreStop
+These hooks would helps usto design a customized code whihc can be excuted during the container lifecycle....
+
+Workload Resources:
+-----------------------
+These are the one whihc handles the pod and workload management on your behalf by configuring the controllers so that the desired state is achived.
+
+**PODS**:
+=========
+A Pod models an application-specific "logical host" -- It contains one or more application containers which are relatively tightly coupled. 
+ a Pod is similar to a group of Docker containers with shared namespaces and shared filesystem volumes
+
+Pods that run a single container\
+Pods that run multiple containers that need to work together\ Grouping multiple co-located and co-managed containers in a single Pod is a relatively advanced use case
+Use thi spattern ony in tightly coupled container use cases.
+
+An application is defined by its deplyment with one or more tightly coupled Containers. 
+Each POD is a Unit of service
+The service exposes that app to the external world or to other services.
+
+Multiple containers within a pod share the resoruces. (networking and storage)
+
+Like Webserver container serving a data from file and another side-car container updating the shared file volume from external system
+Some ini-containers would be present in a POD must be run before the app-container starts running
+
+The Pod remains on that node until the Pod finishes execution, the Pod object is deleted, the Pod is evicted for lack of resources, or the node fails.
+
+A Pod is not a process.
+
+If a node fails, the controller gets notofed and creates the replacement pod.
+but that POD is actully scheduled in a node by the Scheduler.
+
+Deplyment is a resource. it contains the POD template
+A controller is assigned for the deplyment resource.
+The controller uses the template within the deplyment resource to create Pod
+
+Each Pod is assigned a unique IP address for each address family.
+Every container in a Pod shares the network namespace, including the IP address and network ports
+They comm among themself using the "localhost" or using Inter process comm or POSIX shared memory
+But with other container in the other pods they need network communication
+
+Static Pods :
+------------------
+Static Pods are managed directly by the kubelet daemon on a specific node, without the API server observing them
+
+POD lifecycle :
+------------------
+Within a POD the container are health checked by the Kubernetes and the pods are restarted by the kubelet
+
+PODS remain in the node until the termination or deletion.
+
+A pod with same UID wont be scheduled again. All pods have diff UID
+
+POD Phases:
+-----------
+Pending    : The Pod has been accepted by the Kubernetes cluster, but one or more of the containers has not been set up and made ready to run.
+Running    : The Pod has been bound to a node, and all of the containers have been created. At least one container is still running 
+Succeeded  : All containers in the Pod have terminated in success, and will not be restarted.
+Failed     : All containers in the Pod have terminated, and at least one container has terminated in failure.
+Unknown    :  This phase typically occurs due to an error in communicating with the node where the Pod should be running.
+
+Container States:
+-------------------
+Kubernetes tracks the state of each container inside a Pod.
+
+Once the scheduler assigns a Pod to a Node, the kubelet starts creating containers for that Pod using a container runtime.
+There are three possible container states: Waiting, Running, and Terminated.
+
+**kubectl describe pod_name  : Would help us see the status and the reason for that status of each container in the pod
+
+RestartPolicy : Always(Never , OnFailure) : This is as per the result of a Probe
+
+A Pod has a PodStatus : PodScheduled, ContainersReady, Initialized, Ready
+
+
+Container probes:
+--------------------
+To perform a diagnostic, the kubelet calls a Handler implemented by the container. There are three types of handlers:
+ExecAction:
+TCPSocketAction:
+HTTPGetAction:
+
+**Containers within the POd are bound to be always restarted based on the restart policy.
+
+A Probe is a diagnostic performed periodically by the kubelet on a Container.
+
+Kubelet performs optionally(needs to be menioned in the yaml file) : livenessProbe, readinessProbe, startupProbe
+
+Liveness probe  : Checks if a container is running within the pod.
+Readiness probe : Check if the container is running , but ready to accept the web request or not.
+Startup probe   : Checks if the app within the container has started or not.
 
 
 
+Helm :
+==========================
+Package manager for Kubernetes
+To package the YAML files and distribute them in public and pvt repository
+To avoid repatable creation of YAML files bundle, we have a pre-packaged bundle of YAML files for an app like ElasticSearch and have them available to public.
+The bunch of reusable YAML files is called as HELM Chart.
+
+it makes use of a reusbale template for a n app deployment which comprises all resources needed to run the app.
+It uses the placeholder replacement way fo creating charts and helps in your deployment.
 
 
+Pod Termination :
+======================
+**By default, all deletes are graceful within 30 seconds.
+The grace period is used for some clean up activities 
+
+Pods are not terminated abruptly. Instead they are removed gracefully.
+A period of configurable value is set for each container in the pod (terminationGracePeriodSeconds)
+The pod would be in terminating status during this grace period.
+Once the period is exceeded the pod object would be deleted from the API server where they are registered.
+
+A failed pod is not auto deleted from the API server untill done explictly.
+They still keep consuming some resources resulting in resource leakage
+But the kube-controller manager checks if the dead pods must be removed based on terminated-pods-gc-threshold.
 
 
+Init Containers:
+==================
+specialized containers that run before app containers in a Pod. (init containers offer a mechanism to block or delay app container startup until a set of preconditions are met. )
+Once preconditions are met, all of the app containers in a Pod can start in parallel.
 
 
+Init containers can contain utilities or setup scripts not present in an app image.
+ the resource requests and limits for an init container are handled differently compared to app containers
+ They all run to completion before the app container starts.
+ The kubelte keep restarting a failed init contaiiner based on container restartpolicy
+ init containers do not support lifecycle, livenessProbe, readinessProbe, or startupProbe 
+ 
+Sample usage  :
+---------------------
+Check if a service is up and running. if yes, then start the actual application container 
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox:1.28
+    command: ['sh', '-c', 'echo The app is running! && sleep 3600']
+  initContainers:
+  - name: init-myservice
+    image: busybox:1.28
+    command: ['sh', '-c', "until nslookup myservice.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for myservice; sleep 2; done"]
+  - name: init-mydb
+    image: busybox:1.28
+    command: ['sh', '-c', "until nslookup mydb.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for mydb; sleep 2; done"]
+
+Each init container must exit successfully to start the next init containe rin sequence.
+
+init container reserves resources based on its limit request
+app container has its won limit
+The resource  for pod is decided by the max of :
+  sum of all app containers limit 
+  limit for init containers(the max limit of given init containers)
+  
+Pod restart : 
+------------------
+When the image for init container changes. But change of image for app container simply restarts the app container alone and not the pod.
+When all containers within a pod are terminated, based on restartPolicy the containers are restarted. This restarts the init container as well.
 
 
-
-
+Pod Topology Spread Constraints:
+--------------------------------------
 
 
 

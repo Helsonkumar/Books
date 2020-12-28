@@ -148,11 +148,11 @@ Docker Build:
 -------------------
 Used to build the image of our app
 
-docker build DockerFile_name helson/helson_app -->  tag_name
+docker build -t tag_name -f DockerFile_Path context_path -->  context path refers to the path from where the folder refered inside the dockerfile must be picked from. We usually give the pwd (".")
 
-docker push helson/helson_app --> push the image to the docker hub
+docker push helson_repo/helson_app:tag --> push the image to the docker hub
 
-Docker would cache the build steps and would not reurn the whole build again and again every time make changes to the DodkerFile.
+Docker would cache the build steps and would not rerun the whole build again and again every time make changes to the DodkerFile.
 
 
 
