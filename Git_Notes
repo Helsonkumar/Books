@@ -7,7 +7,42 @@ git reset --soft/--hard origin/master
 
 git checkout branch_name
 (remotes/origin/branch_name)
+Note  : dont use "git checkout -b branch"  (This owould simply create a new copy of the current branch with the anem given)
 
+
+
+
+git rebase  :
+-------------------
+One of the utilities used for merging changes from 2 diff branches.
+Not adviced to use
+
+master  : m1,m2   -----> m3
+feature: m1,m2,f1------------> f2
+
+f2 commited after m3
+
+feature branch  >> git merger --squah master
+This would collated all the changes in feature into one commit and apply on top of master's latest commit
+m1,m2,m3,(f1,f2)
+but this is not easy to track changes.
+
+feature branch >> git rebase master
+gti checks for the latest common commit between 2 branch.
+Saves all changes in feature and apply on top of the changes applied to master post the common commit(m2)
+
+m1,m2,m3,f1,f2 ==> easily trackable
+
+The primary reason for rebasing is to maintain a linear project history. 
+The benefits of having a clean history become tangible when performing Git operations to investigate the introduction of a regression
+
+
+
+
+To time travel : To find the changes made in the last n - unit of time
+-------------------------------------------------------------------------
+git diff master@{0} master@{11.day.ago}
+This example is very useful if you want to know changes that have occurred within a time frame.
 
 
 printing logs of commimt:
@@ -44,3 +79,14 @@ git push origin --delete old_branch_name
 
 push the new branch to remote  : 
 git push origin new_branch_name
+
+
+
+Clone a project from another repo  : Create a new repo : push that cloned project to the new repo
+========================================================================================================
+git remote add origin https://github.com/Helsonkumar/spark-on-k8s-gcp-examples.git
+git push https://github.com/Helsonkumar/spark-on-k8s-gcp-examples.git master
+
+
+
+

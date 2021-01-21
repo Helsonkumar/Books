@@ -1323,6 +1323,77 @@ Pod Topology Spread Constraints:
 
 
 
+How GKE Auto Scaler works:
+--------------------------------------
+It resizes cluster node pools based on the maxmum and minimum size we have configured.
+It periodically monitors the cluster needs.
+Compute Engine managed instance group auot scaling and GKE auto scaling both are different.
+
+Auto scaling may genereally cause a brief disruption.
+So design your workload to be disruption tolerant.  If your services are not disruption-tolerant, using cluster autoscaler is not recommended.
+
+A cluster can have multiple node-pools
+
+Limits:
+------------
+When you autoscale clusters, node pool scaling limits are determined by zone availability.
+
+Autoscaling profiles : The decision of when to remove a node is a trade-off between optimizing for utilization or the availability of resources.
+
+The scheduling profile can be default or optimized-utilization
+
+When scaling down, cluster autoscaler respects scheduling and eviction rules set on Pods.
+What types of pods can prevent CA from removing a node?
+Pods with restrictive PodDisruptionBudget.
+Kube-system pods that:
+are not run on the node by default, *
+don't have a pod disruption budget set or their PDB is too restrictive (since CA 0.6).
+Pods that are not backed by a controller object (so not created by deployment, replica set, job, stateful set etc). *
+Pods with local storage. *
+Pods that cannot be moved elsewhere due to various constraints (lack of resources, non-matching node selectors or affinity, matching anti-affinity, etc)
+Pods that have the following annotation set:
+"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"
+
+
+CA has latency of 30sec  in smaller cluster(30 nodes with 15 pods each)
+latency of 60sec in larger cluster (100-1000 nodes with 100 pods each)
+
+
+How HPA and CA works:
+-----------------
+CA simply adjust the replicas in the deployment or replicaset.
+the CPU load is factor in cluser or HPA auto scling.
+
+
+
+
+Operating criteria:
+---------------------
+
+
+StatefulSet  :
+--------------------
+Its is one of the Kuberntes resources
+used for Stateful apps. Whihc maintains state in a persistant volume...eg. DB app
+The PODS are tagged with a unique ID.
+Each pods is assigned with the persistant volume from the given volume claim template.
+When a stateful pod gets deleted its volume still remains.So the newly luanched pod would be assigned the volumme whihc was mapped to the old pod.
+There exist a 1-to-1 relationship between a POD and Volume tagged to it.
+The stateful pods are sclaed up and down in orderly fashion based onnthe Pod management strategy : OrderlyUpdate or Parallel.
+
+Update Strategy :
+---------------------
+OnDelete : A pod must be manulally deleted to get updated with the new version
+RollingUpdate : As usual
+Partition : Pods with ID greater than the partition number is updated.Rest arenot updated. useful for Canary update scenario.
+
+
+
+
+
+
+
+
 
 
 

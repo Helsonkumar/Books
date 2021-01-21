@@ -1,6 +1,91 @@
 Spark Notes :
 =====================
 
+Check what is zero-copy clone
+Is predicate push down applicable in all cases.
+
+
+
+
+
+
+
+
+
+
+
+
+Spark uses Hadoop’s client libraries for HDFS and YARN.
+We have Hadoop free binary version as well.
+Spark runs on both Windows and UNIX-like systems (e.g. Linux, Mac OS), and it should run on any platform that runs a supported version of Java.
+Spark runs on Java 8/11, Scala 2.12, Python 2.7+/3.4+ and R 3.5+. 
+For the Scala API, Spark 3.0.1 uses Scala 2.12. You will need to use a compatible Scala version (2.12.x).
+Apache Spark uses Arrow as a data interchange format, The Arrow format is designed to enable fast computation.
+Apache Arrow defines a language-independent columnar memory format for flat and hierarchical data, organized for efficient analytic operations on modern hardware like CPUs and GPUs. 
+
+
+Cluster Mode  : Driver(with Sc) runs within the Application Master process which inturn runs in side the cluster-scoped
+it is common to use cluster mode to minimize network latency between the drivers and the executors.
+
+
+Client Mode   : Driver runs inside the spark-submit(Client to cluster) process and the application master simply exists to ask for resources from YARN.The input and output of the application is attached to the console.
+Thus, this mode is especially suitable for applications that involve the REPL (e.g. Spark shell).
+use this mode if your client is physically colocated to the worker node since the worker talks to master during app execution
+
+– In YARN cluster mode, the Driver is run on YARN Application Master run on random Core node )
+– IN YARN Client  Mode, the Driver is run on Master node itself. Bcz the the driver runs inside the yarn client process which is launched in Master node. 
+
+
+In Cluster mode  : A YARN Client process is created and it periodically polls the APP Master.
+
+When log aggretaion is truend on you eill see all logs for all executors and driver in the console with the below commnd: Else we will have the go the Data node and check for the logs with the app-id /var/log/hadoop-yarn/containers/[application id]/[container id]/stdout
+yarn logs -applicationId <app ID>
+
+Config Commands  :
+----------------------
+--jars : to have the dependcy jars distributed among the executors classpath.This is meant to be a dependcy jars for all task submitted to cluster.
+--files  : Custome fiels to be used in executors (like log4J properties).This willl be uploaded from local Fs to HDFS and then loaded to executors
+
+/bin/spark-submit \
+  --class <main-class> \
+  --master <master-url> \
+  --deploy-mode <deploy-mode> \
+  --conf <key>=<value> \
+  ... # other options
+  --jars/ --files
+  <application-jar> \
+  [application-arguments]
+  
+  Config :
+  sparkContext.setConf / --conf flags / spark-defaults.conf
+
+Advanced Dependency Management
+When using spark-submit, the application jar along with any jars included with the --jars option will be automatically transferred to the cluster and these jars would be copied or cached to the driver and workers involved..
+
+File:// ==> means the drivers https file server (the executors pull the jar form this location )
+hdfs://, https://, https:// ==> straightforward
+local:/// ==> the file is expected to be present in all worker nodes(useful if large jars need to be transferred.Reduce network IO)
+Note that JARs and files are copied to the working directory for each SparkContext on the executor nodes.
+With YARN, cleanup is handled automatically for these jars after app execution.
+
+
+
+
+SparkUI : Is hosted by Driver node(WHIHC MATY BE RANDOM NODE). So u must go to the driver node.
+Spark History server  : Basically hosted in masternode :18080
+
+
+Spark infact needs kerbros token to access various Cluster service to do the job. Even the Oozie workflow must be enabled to collect such token
+
+
+
+
+
+
+
+
+
+
 For Spark SQL  : The fulcrum is the "DataSource API". So any format of data can be analyzed. 
 So user must implement a plugin using this DataSource API to analyze a custom formatted data.
 
@@ -10,7 +95,7 @@ RDD is not used these days since it is cumbersome.
 
 DF and SQL are Structured API.
 But they limit what can be expresssed. 
-But hey make the code more Declarative and More space for optimization (here where the Catalyst Optimizer comes into the picture)
+But they make the code more Declarative and More space for optimization (here where the Catalyst Optimizer comes into the picture)
 
 
 SQL : Catalyst optimizer
@@ -23,26 +108,26 @@ Unresolved Logical Plan  ===> Resolved Logical Plan ===>  Optimzed Logical Plan 
 
 
 Physcial plan  : Cost based model  : Its does smoething like Join Selection
- But rite now we dont do consideration of diff rules for cots optimization.
+ But rite now we dont do consideration of diff rules for cost optimization.
  Instead we currently generate only one Physical plan and we stck to that.
  
 *** Step 1: User code is abstracted as Tree despite of the language in whihc it is written
 
 *** Step 2  : Transformation  : Logical plan to physical plan (using strategies) Implemented using Scala partial function and Pattern matching.
 
-Logical plan : Defines the coputataion on the data w/o defininf how to conduct such computation.
+Logical plan : Defines the computation on the data w/o defining how to conduct such computation.
 
 Rule are applied  : Rules are something like doing only Row Projection and Column Pruning.
 
 so these rules are applied in batches to batch of rows.
 
-Looks like the data layre or staorage layer statictics is very imprtatnt to dcode the effective query plan.
+Looks like the data layer or storage layer statictics is very imprtatnt to decode the effective query plan.
 
 But the storage layer statistics may change at nay point of time and it is out of Spark's control
 
-So Databricks brought in 2 solutions: Delat lake and AQE
+So Databricks brought in 2 solutions: Delta lake and AQE
 
-Delat lake  : Gives ACID model on Spark data. It is an open soruce storage layer. Better optimization oppurtunities.
+Delta lake  : Gives ACID model on Spark data. It is an open source storage layer. Better optimization oppurtunities.
  
  
  SHUFFLE  or BROADCAST divides the query execution into stages.
@@ -96,6 +181,89 @@ the second represents the minimum number of partitions after optimization (defau
 the third represents the “suggested” size of the partitions after optimization (default: 64 Mb).
 
 
+Joins  :
+=====================
+Joins in spark is expensive due to shuffles files.
+if the datasets do not have known partitioner(partitioned with same partitioner) then we may have data (value for the same key) unevenly distributed acros nodes.
+Ideal spark tends to collect data or value for a key present in the same partition or in the same node.
+So the same key from 2 diff datasets would be made to present in the same node so the data for that key can be joined locally. This triggers the shuffling of files across network.
+But if the datasets are already partitioned by the same partitioner then the values would present in the same node.Shuffle would not be triggered in this case.
+Spark in geberal does the qui-join.ie.join only the keys whihc are rpresent in 2 DS.
+Supports right-outer,left-outer,full-outer,left-semi,left-anti
+Default  : Shuffle Hash join
+
+Joins in RDD is not as optimized as Join in Datasets or Dataframes.
+In Spark-sql the filetr push down and BC hash join ia all taken care by the optimizer.
+
+Broadcast Hash join :
+-------------------------
+To avoid large shuffle, the smallest DS from a join would be completly broadcasted to the nodes related to the larger node.
+This reduces network IO.
+
+Static Partiton pruning :
+-----------------------------
+Used to consider only the partitons whihc are related to the join while scan.
+if we use any of the partiton column for fileter then static pruning is triggered.
+
+ 
+ 
+ 
+
+Dynamic Partition pruning  :
+=================================
+
+The mechnism for Spark to prune scanning unnecessary partitons in a query
+This an optimization from Spark v3.0
+
+Dynamic partition pruning occurs when the optimizer is unable to identify at parse time the partitions it has to eliminate. 
+
+*** This optimization is triggerred only when your join query is planned as BROADCAST-HASH JOIN.
+*** when one table in the join is below 10MB(treshold to consider a table as small to be used for Broadcasting)
+
+This optimization occurs at the Logical Plan level.
+
+This is useful for running effective  SATR SCHEMA JOIN queries : Queries which involve the big fact tables and multiple Small dimensional tables.
+
+Lets say we join sales fact table with the date dim tale. And we have filter for Dim table alone .
+Since the Dim table is small in size here , spark would do the broadcast jon .ie
+The Filtered result from the Dim table is broadcasted to the nodes where the partiton for the fact table resides.
+This would help us avaoid shuffles.
+
+DPP uses this approache. 
+The filtered applied on DIM tables is plugged into the scanner of the larger Fact tables, so only the fact partitions which are actually needed for joining would be scanned.
+This is what DPP all about. 
+We avoid scanning unnecessary scanning in Star-Schema join queries.
+
+pre-requisite :
+-------------------------
+This would work only if there is a matching partition column between fact and dimension tables.
+The size of the dim table must be uynder 10MB configured level. To be considered as Broadcast Hash join.
+DPP is not triggered for other type of joins.
+Because the dynamic filtering is a kind of subquery duplication. (subquery holds the filetered result of the dim table)
+So as long as the Dim table subquery duplicate execution is cheaper, it is ok.
+if the Subquery duplication is costly then spark would not triggere this DPP.
+
+
+
+
+Imaging that dim has column date which is not a partition column in the fact table.
+Then the entire fact tables would be scanned anyway , and the DPP is not applicable in this case.
+
+This can be said as a challenge faced.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -108,13 +276,10 @@ A scheduler to run the Spark executors across a computing cluster
 People have been doing this differently on-premise and cloud. With on-premise, most use Spark with Hadoop, or particularly HDFS for the storage and YARN for the scheduler. While in the cloud, most use object storage like Amazon S3 for the storage, and a separate cloud-native service such as Amazon EMR or Databricks for the scheduler. 
 
 
-
-
 Reason  :
 -------------
 
 In general Seperation of Storage and Computation is what needed. This is somewhat addressed by containerized apps in kubernetes.
-
 
 The primitives offered by k8s like namepsaces, pods, deployment, raset,etc has been reason for running spark on k8s instead of yarn.
 
@@ -149,9 +314,6 @@ Isolation, meaning that you can prevent workloads running in the cluster from in
 	   
 Pitfalls:
 -----------
-
-	   
-
 Spark-submit is added with support to Kubernetes since v2.3. Supports both cluster and client(since 2.4) mode
 But Kubernetes operator provides a lot more feature owing Monitoring and management.
 Although easy to use, spark-submit lacks functionalities like supporting basic operations for job management. 
@@ -301,18 +463,24 @@ There are several Spark on Kubernetes features that are currently being worked o
 
 Some of these include:
 
-Dynamic Resource Allocation and External Shuffle Service
+Dynamic Resource Allocation and External Shuffle Service : The shuffles files are lost whne the excutor node is scaled down in Dynamic allocation.
+This is prevented by using the external shuffle service to external files systems.This saves even the scratch data which spark writes locally.
+
+
+Scaling can be at App level or even at cluster level in K8s.
+spark.dynamicAllocation.enabled=true
+spark.dynamicAllocation.shuffleTracking.enabled=true
+
+but in Dynamic Scaling the node start may take some time.
+To kick start the pods immediately, you can oversize your Kubernetes cluster by scheduling what is called “pause pods” on it. 
+These are low-priority pods which basically do nothing.
+When a Spark app requires space to run, Kubernetes will delete these lower priority pods, and then reschedule them 
+This prevent starting a new node and consumes no resource for pause pods.
+
+
+Use on Demand machines for Drivers and Spot nodes for executors.
+
 Job Queues and Resource Management
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -325,11 +493,11 @@ The Operator defines two Custom Resource Definitions (CRDs), SparkApplication an
 The later is for submitting spark jobs as per a timly schedule like schdule cron job
 the Operator also gives you the ability to mount volumes and ConfigMaps to customize your pods.
 In Operator everytiing is defined in the form of yaml file and have them deployed.
-
+So that the spark driver and its relevant objects can be managed as a normal kube objects. 
 
 So we need to have the Spark Opeartor installed in the kubernetes cluster first.
 So it creates a custom controllers.
-The job definition in the yml file defines the joark job object.
+The job definition in the yml file defines the spark job object.
 Once the yml file is submitted the operator calls the custom controller to create a Spark job object from the given job def in yml file
 And then the componenets within the operator submits the spark-submit command.
 The pods events are monitored by the component within the Opeartor pod.
