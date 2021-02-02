@@ -41,6 +41,7 @@ In Cluster mode  : A YARN Client process is created and it periodically polls th
 When log aggretaion is truend on you eill see all logs for all executors and driver in the console with the below commnd: Else we will have the go the Data node and check for the logs with the app-id /var/log/hadoop-yarn/containers/[application id]/[container id]/stdout
 yarn logs -applicationId <app ID>
 
+
 Config Commands  :
 ----------------------
 --jars : to have the dependcy jars distributed among the executors classpath.This is meant to be a dependcy jars for all task submitted to cluster.
@@ -76,6 +77,86 @@ Spark History server  : Basically hosted in masternode :18080
 
 
 Spark infact needs kerbros token to access various Cluster service to do the job. Even the Oozie workflow must be enabled to collect such token
+
+
+
+Caught from High performance spark :
+---------------------------------------------
+Spark infact needs a storage system and clustre manager.
+
+The cluster manager simply allocates resources and launches the executor according to the config setup and orchestrates them.
+
+RDD  : Lazily evaluated  , Immutable , In-Memory
+
+Lay evaluation  : helps us collate or combine operation that does not require comm to driver and execute them in single pass thru of data.
+we can chain together operations with narrow dependencies and let the
+Spark evaluation engine do the work of consolidating them.
+
+Fault Tolerant  : Spark would bnot privde incorrect result in the event of host machine failure.
+Bcz each partiton has its own dependcy info to recalculate them if lost.
+
+An RDD interface has 5 major properties  : List of partitons , Dependent partitions , fucntion for iteraor , partitioner , Prefered location (gives the lcoation info)
+
+Spark’s performance advantage over MapReduce is greatest in use cases involving
+repeated computations.
+In mapreduce the intermediate result is wirriten to disk for each pas thru of data.
+
+Option for mem-mgmt :
+----------------------
+Inmemory deserialized : data is stored in the memory in the form of object. CPU efficine t. But not memory effective.
+In-memory Serialized : Objects in RDD in the form of deserialized stream of bytes.
+On Disk  : RDD partitons too lrage can be stored in disk.but can be more fault-tolerant for long sequences of
+transformations
+
+
+A spark action triggers a job.
+A job has a stage defined for each txn with wide dependency
+Each stage has set of tasks (assigned to Task Scheduler in each node)
+
+Narrow and Wide dependency
+
+Narrow  : A parent has only one child.
+Wide  : A parent has many child
+
+Dependencies are explianed from parent perspective.
+
+Wide Dep : Due to shuffle
+happens for K,V paired data types.
+During every shuffle we talk with driver.
+Txns with narrow dependency can be clubbed togther and doen within one data pass thru.
+This would result in good performance  
+The no of task depends on the number of partition involved in the child partition.
+Shuffles stages limit the parallelization.results in Disk IO for shuffle files and data movement
+Partiton with wide dependecny has costly in being recomputiing since most of its child partition must be recomputed again.
+
+Coalesce : is used to change the number of partitions in an RDD .  It might decrease or increase the partition number.
+its a Narrow one when we decrease the number, It does not triggeres shuffle.
+it is wide when we increase the number of partition.
+Increasing the parttion number triggeres the shuffle and this is a wide txn.
+Note  : Shuffle is triggered for Non K.V paired data as well. Coalesce and Repartition is a special case.
+U can set shuffle true oro flase for coalesce
+
+Repartiton  : is an alternate to coalesce. It triggeres shuffle.
+
+For partiton increase prefer repartition over coalesce.
+
+RDD type information is very imp. 
+
+Take care of GC. GC triggers more serialization time.Avoid creating more objects.
+
+Tip : Try reusing the same object instaed of creating a new object for every records read like we did in the aggregate scala example.
+Means we need to use mutable objects.
+But best to avoid using mutable objects in spark since they might lead to serlaization error and provide inaccurate result.
+
+Serialization in spark :
+==========================
+The compiled code  (Static part ) of the code is transfered to the driver and the worker. This does not happen during the run time.
+But during the runtime the reference to objects (instance of class) is passed to the worker from teh driver.
+This is what the serialization during the runtime. This can cause the tassk not serializable error during runtime.
+
+References to static parts of the code. These point to things that were established permanently during compilation, and have already been shipped to the workers.
+References to objects â€” instances of classes. These were created by the driver at runtime, hence the workers have no copy of them. These must be serialized and shipped to the workers.
+
 
 
 
@@ -479,6 +560,8 @@ This prevent starting a new node and consumes no resource for pause pods.
 
 
 Use on Demand machines for Drivers and Spot nodes for executors.
+
+
 
 Job Queues and Resource Management
 

@@ -51,6 +51,25 @@ git log --pretty ---oneline
 
 
 
+git diff :
+---------------
+git diff on pwd gives the diff f changes made so far compared to the HEAD
+
+git diff file.txt --> compares that fie alone
+
+git diff --cached file.txt --> compares the changes in the files to the one which is staged.
+
+By default git diff will show you any uncommitted changes since the last commit.
+
+git diff branch1...other-feature-branch --> compares the branches...note for the ... dot operator
+
+git diff master new_branch ./diff_test.txt --> compares file from 2 diff branches
+
+
+
+
+
+
 Denotions:
 ----------------------------
 HEAD -> master ==> current pos in local repo

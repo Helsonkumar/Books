@@ -6,7 +6,7 @@ F2  : Navigate to the next error
 
 Ctrl + E  : most recently used files
 
-shift  + shift  : Search everywhere1
+shift  + shift  : Search everywhere
 
 Ctrl  + B  : Declaration of the variable or field
 
@@ -21,6 +21,8 @@ shift + ctrl + A : Search for shortcuts
 
 F7  + F8 + F9   >  Step into + Step over  + Step to next BP
 shift  + F8   > Exit out.
+
+
 
 
 
