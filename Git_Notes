@@ -7,7 +7,7 @@ git reset --soft/--hard origin/master
 
 git checkout branch_name
 (remotes/origin/branch_name)
-Note  : dont use "git checkout -b branch"  (This owould simply create a new copy of the current branch with the anem given)
+Note  : dont use "git checkout -b branch"  (This would simply create a new copy of the current branch with the name given)
 
 
 
@@ -64,6 +64,9 @@ By default git diff will show you any uncommitted changes since the last commit.
 git diff branch1...other-feature-branch --> compares the branches...note for the ... dot operator
 
 git diff master new_branch ./diff_test.txt --> compares file from 2 diff branches
+
+
+
 
 
 

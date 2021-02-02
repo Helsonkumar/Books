@@ -1,2 +1,29 @@
 Java Concurrency  : From Manning
 =============================================
+***How to decide the number of threads we need for processing  :
+Its depends on the type of workload we deal with. 
+Do not exceed the number of cores if the WL is compute intensive.
+if it is IO intensive like doing file read or write where CPU usage is limited, then go for more number of threads than the core.
+
+Think of Concurreny and Parallelism.
+
+A Thread is blocked when its computational resources are held by another thread which does a non-CPU related task like talking with Db , Doing IO
+
+We have OS threads, H/W threads, Java Threads
+the optimum number of Java threads for a given program depends on the number of hardware cores available
+
+ThreadPool executor service (Futures & Callable) added on top of Executor(Futures). It is a high level abstraction.
+But the blocking task may occupy a worker thread in the pool leaving other task to starve for worker thread.
+
+Asynchronous methods :
+===========================
+A thread(task) spawned by a method call may not outlive the method call (i.e the method waits for the thread to complete before exiti)
+but in Asynchronous methods, a thread may outlive the method call which spawned it.
+
+if a thread is tagged as Daemon then it is killed on exit. 
+Else the return from main() would wait for all threads to terminate before existing.
+
+e.g  : Long sum_of_elem = Arrays.stream(array-ref).parallel().sum()
+
+CompletableFuture is an enhancement to Future.
+
