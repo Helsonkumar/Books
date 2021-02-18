@@ -5,6 +5,12 @@ git reset --soft/--hard origin/master
 (hard : removes ur local changes and resets ur commit ==> you will loose your changes in local after reset)
 
 
+To remove one of the file or folder which has bees staged :
+-------------------------------------------------------------
+git reset 	HEAD -- file/folder_name
+
+
+
 git checkout branch_name
 (remotes/origin/branch_name)
 Note  : dont use "git checkout -b branch"  (This would simply create a new copy of the current branch with the name given)
@@ -19,7 +25,7 @@ Not adviced to use
 
 master  : m1,m2   -----> m3
 feature: m1,m2,f1------------> f2
-
+5502 15 nviia 700000 512 3501 15 11 8 1t 256gb nvidia 
 f2 commited after m3
 
 feature branch  >> git merger --squah master
@@ -65,7 +71,7 @@ git diff branch1...other-feature-branch --> compares the branches...note for the
 
 git diff master new_branch ./diff_test.txt --> compares file from 2 diff branches
 
-
+git diff @{upstream} --> Compares the current branch HEAD with the one in the local remote repo reference  (remote/origin). Helps to find the diff between current and remote post fetch
 
 
 
