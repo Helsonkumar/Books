@@ -10,13 +10,15 @@ shift  + shift  : Search everywhere
 
 Ctrl  + B  : Declaration of the variable or field
 
-Alt + F7 : where the item is used
+Alt + F7 : where the item is used (Helps fidning the usuage of interfaces)
 
 shift + ctrl + enter  : Auto complete code
 
 ctrl  + alt  + L : Format the code
 
 shift + ctrl + A : Search for shortcuts
+
+Ctrl + Shift  + F  : Search for String or item in project
 
 
 F7  + F8 + F9   >  Step into + Step over  + Step to next BP

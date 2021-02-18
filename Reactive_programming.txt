@@ -1,9 +1,25 @@
 Java Concurrency  : From Manning
 =============================================
 ***How to decide the number of threads we need for processing  :
+
+Nthreads = NCPU * UCPU * (1 + W/C)
+
+In this formula, NCPU is the number of cores, available through Runtime.get-
+Runtime().availableProcessors()
+ UCPU is the target CPU use (between 0 and 1).
+ W/C is the ratio of wait time to compute time.
+
+A WL can be CPU / IO / Memory / Cache bound.
+
 Its depends on the type of workload we deal with. 
 Do not exceed the number of cores if the WL is compute intensive.
 if it is IO intensive like doing file read or write where CPU usage is limited, then go for more number of threads than the core.
+
+Note  : Always choose the number of threads for a pool based on your program requirement.
+
+If a Thread has been attached with a task and waiting in status, then the thread which is in blocking state(waiting for IO) in a core would be removed from the core for time being and the
+waiting thread would be given that core for computation. This is called context switching or time slicing
+But dont not create more threds than the # of tasks given.
 
 Think of Concurreny and Parallelism.
 
@@ -15,6 +31,25 @@ the optimum number of Java threads for a given program depends on the number of 
 ThreadPool executor service (Futures & Callable) added on top of Executor(Futures). It is a high level abstraction.
 But the blocking task may occupy a worker thread in the pool leaving other task to starve for worker thread.
 
+Task  --> needs threads to run --> So a task gets attached to a thread --> that thread needs resources to run
+A sleeping task in a thread occupies the resources.
+
+***How IO works :
+-----------------
+An harddisk has its specialized controllers to process requestf ro CPU
+During IO CPU send ints to controllers in HD. They take the inst and process thme and load the data to RAM(Direct Access memory).
+In the mean while CPU allocates the resorucee to some other process.
+Once done send s the interupt signal to CPU.
+So ideally CPU is not involved in IO operation.
+
+
+GPU  : Are more useful when your program can be parallelized. Internally it is optiized for parallel stuffs and avoid blocking call.
+
+
+Priorities for threads  : Avoid setting them. Since its is OS dependent and no gurantee for th trhead with hih priority to be executed first.
+
+
+Then 
 Asynchronous methods :
 ===========================
 A thread(task) spawned by a method call may not outlive the method call (i.e the method waits for the thread to complete before exiti)
@@ -26,4 +61,151 @@ Else the return from main() would wait for all threads to terminate before exist
 e.g  : Long sum_of_elem = Arrays.stream(array-ref).parallel().sum()
 
 CompletableFuture is an enhancement to Future.
+
+Blocking : Comes in two variants  :
+----------------------------------------
+1. When a task waits for another task to complet something.
+2. When a task waits for IO, Human inout, Network Comm,etc
+
+
+Make all API ASynchronous Principle :
+---------------------------------------------
+Make the blocking operation in a seperate non-blocking call
+
+API Types  :
+--------------
+Future-type based and Reactive Style based (Flow API : based on publish subscribe model. Rectas for sequence events).
+
+Rective Style  :
+void f(int x, Consumer<Integer> dealWithResult,
+Consumer<Throwable> dealWithException);
+
+
+CompletableFuture : Simlar to Future, but makes the futures more composable.
+
+CompletableFuture is an implementation of Future Interface
+========================================================================================
+It is just an additionla weapon to the parallel streams and old Future API
+The Future interface was introduced in Java 5 to model a result made available at
+some point in the future.
+To work with a Future, you typically have to wrap the time-consuming operation
+inside a Callable object and submit it to an ExecutorService
+
+Future.isDone (Checks if the Future is completed or not)
+ 
+Comp.Future is a plain patter of Futre what a Stream is for Collection
+
+Comp.Future would help us express declaratively like:
+Combining result of tow async task 
+reacting to the result or completion of 2 as task
+etc
+
+When an excption occurs in the Async thread it kills that thread.
+This would lead to Future.get() method to wait indefinitely.
+So we can use timeout while get() --> Fut.get(1, TimeUnit.seconds(5000))
+
+or use 
+
+try {
+double price = calculatePrice(product);
+futurePrice.complete(price);
+} catch (Exception ex) {
+futurePrice.completeExceptionally(ex);
+}
+
+ExecutionException or RuntimeEception may occurs when an Async Thread runs.
+
+CompletableFuture.supplyAsyn(() -> {_do_something_Async})
+Future.get() <==> CompletableFuture.join(compfuture_ref)
+
+By Default  : Since we dont mention the ThreadPool executor service for Future or parallelStream,it uses the a pool withfixed thread which is equivalent 
+to the number of Processors available.
+Runtime.getRuntime.availableprocessors()
+But for Complitable future we can mention different executor service than the default one.
+
+Custom Executor  :
+========================
+To oveeride the default exec-service creation behaviour. We can use custom executors.
+ 100 -> Maximum Thread limit to avoi server crash
+Executor ex  = Executors.newFixedThreadPool(Math.min(shopArr.size() , 100) , 
+               (Runnable r) -> {
+			    Thread t = new Thread(r);
+                t.setDeamon(true)
+                t.start()				
+			   }
+Tip  : Use parallel Stream when your computation is CPU-Bound and very lesser IO).
+       If all threads are compute-bound, there’s no point in having
+       more threads than processor cores.
+	   
+	   If your computation is IO + CPU bound then use CompletableFuture with Custom Executors as per the program requirement
+	   
+Compising Futures :
+-------------------------
+Use thenCombine : when  one task depends on the output of another task for its input.
+
+
+fut1.thenCompose(func2(y) ==> returns another Completables future which takes the out put of first future as its input
+thenApply(func) --> waits for fut1 to complete and then apply the fucntion. Would not block the code until the fut1 completes.
+	   
+	   
+thenComposeAsync ==> ThenCombine in general executes two Async tasks. But method w/o Async suffixs would use the same thread for both the task .
+                     thenCombineAsync uses diff thread or each tasks.
+					 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Importatnt Classes in Java Concurrent package  :
+=======================================================
+Volatile  :  Use this if threads have visibility issue. Like the Boolean flag changes to false but that change is not visible to another thread. Used mostly for read only threads
+Atomic  : Use this issue for compounf issue problem. Used for write operation.
+
+
+
+Executors  : Single object to run a task. it may or not use the same execution main thread
+
+ExecutorService  : Uses pool of threads to run tasks.
+Scheduled executors :To run as task after givendelay once.
+
+ScheduledWithFixedRate(initial delay  , period)  : Run a task after given initial delay and runs the consecutive task at fxed time interval.
+SchduledIAtFixedRate(initial delay , period)  : Runs a task after given initial delay and starts the consecutive task only after the given period post the completion of running tasks.
+
+CountDownLatch  : It acts like a counter whihc is kept on decremented by the registered servcies or child threads at any point of time.The child threads can proceed withno issues after decrementing the latch.
+                  Once the count of the latch reaches zero the MAIN thread can proceed further.
+				  Used mainly to block a calling thread until the child threads have finished their tasks.
+				  
+
+CyClicBarrier   : This decides when each child threads can start or continue further. when only all the registered services have reached the barrier , then all child threads can proceed further.
+                  This keeps on continue as multiple phases as a Cylic one.
+				  
+Semaphore       : Used to retrict the access to a resource with limits. Like permits to access. 
+
+
+
+			  
+				  
+				  
+
+		  
+
+
 
