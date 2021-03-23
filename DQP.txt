@@ -1,0 +1,75 @@
+Data Qualities 4 Dimensions  :
+==================================
+Accuracy
+Comprehensive
+Timely
+Consistent
+
+If a data element does meets these std then it is not good for business decision making
+You might probably loose bsuiness due to inaccurate data elements...eg inaccurate appointmnt details by the appt booking system
+
+We must report DQException to CDO or CDG (governance officers)
+The major reason fro DQE  : Human error whislt making data entry , process error , etc
+So we are building a DQP as Global Function to enable data from various system to send us feeds and have them validated and reported via DQE reporting process.
+
+Goal is to Make Sure Data Is Fit For Purpose.
+
+
+
+
+Data Silos : 
+==============
+A data silo is a collection of data held by one group that is not easily or fully accessible by other groups. 
+... Finance, administration, HR, and other departments need different information to do their work, and those individual collections of often overlapping-but-inconsistent data are in separate silos.
+Silos restricts internal transparency and productivity
+They cerate friction adn Duplication of efforts
+Its a cultural change to brek silos
+
+Information Silos occur when Data Mgmt system is incompatible or unable to integrate with other system.
+Due to lack or comm between business.
+Eliminating data silos leads to effective and informed decision making
+Eliminates operational redundancies
+
+
+***Data silos undermine productivity, hinder insights, and obstruct collaboration. 
+ Centralizing in the cloud has advantages in that cloud technology has been optimized to make centralization practical.
+ simplifies data integration ETL, data governance, security, and regulatory compliance while providing silo-busting access to data by every department.
+ 
+ E:g  : Snowflake  : Talend Data Fabric
+
+A data silo is a collection of data held by one group that is not easily or fully accessible by other groups. 
+... Finance, administration, HR, and other departments need different information to do their work, and those individual collections of often overlapping-but-inconsistent data are in separate silos.
+
+
+
+
+Data silos limit the view of data
+How can you find hidden opportunities for operational cost savings, for example, if operations and cost data aren’t consolidated? 
+
+Data silos threaten data integrity
+For example, if data on the same patient is stored in different systems, this data can become out of sync over time. 
+
+Data silos waste resources
+
+Data silos discourage collaborative work
+
+
+How to break down data silos
+What took weeks, months, or years can now be accomplished in days or hours with tools that streamline the process of gathering data into a common pool and format for efficient analysis
+
+
+Change the culture
+
+Develop a way to centralize data : The best way to bust silos is to pool data into a cloud-based data warehouse or data lake 
+Data from disparate sources are homogenized and consolidated, and access can be easily granted to individuals or groups.
+
+Integrate data
+
+Scripting : Changes in data sources require scripts to be updated, so maintenance becomes a cost and time burden for IT professionals.
+
+On-premises ETL tools : ETL (extract, transform, and load) and ELT tools automate the process of moving data from various sources to the data warehouse. 
+
+Cloud-based ETL : ETL breaks down silos by providing the technological means to gather data from different sources into a central location for analysis. 
+                  ETL helps handle data integrity issues so that everyone is always working with fresh data. 
+				  
+				  

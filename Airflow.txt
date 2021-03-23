@@ -1,0 +1,261 @@
+
+
+
+Items to be explored :
+==========================
+How a task is retyed and re-executed
+Airflow in Kuberbetes
+How to trigger DAG in Production : one way is to send POST request with DAG_ID to the REST API exposed by Airflow.
+HOw the task in Airflow pipeline are made idempotent
+How retry of DAG works
+What is depend_on_past run in Airflow
+back-fill tasks
+
+================================================================================================================================================================================================================================
+from airflow.models import DAG
+from airflow.providers.sqlite.operators.sqlite import SqliteOperator
+from airflow.providers.http.sensors.http import HttpSensor
+from airflow.providers.http.operators.http import SimpleHttpOperator
+from datetime import datetime
+from airflow.operators.python import PythonOperator
+import json
+from pandas import json_normalize
+
+helson_default_args = {
+    'start_date': datetime(2021,3,11)
+
+}
+
+def parse_user(ti) : 
+   users  = ti.xcom_pull(task_ids=['fetch_user'])
+   if not len(users)  or 'results' not in users:
+       raise ValueError('User is Empty')
+   user = users[0]['results'][0]
+   processed_user = jons_normalize(
+       {
+           'firstname': user['name']['first'],
+           'lastname': user['name']['last'],
+           'country': user['location']['country'],
+           'username': user['login']['username'],
+           'password': user['login']['password'],
+           'email' : user['email']
+       }
+   )    
+   processed_user.to_csv('/tmp/processed)user.csv' , index=None, header=False)
+
+
+with DAG('helson_user_rep', schedule_interval='@daily',
+          default_args=helson_default_args,
+          catchup=False) as dag:
+
+        creating_tbl  = SqliteOperator(
+             task_id= 'creating_tbl',
+             sqlite_conn_id='helson_db_sqlite',
+             sql='''
+                CREATE TABLE helson_users (
+                    firstname TEXT NOT_NULL,ls
+                    lastname TEXT NOT_NULL,
+                    country TEXT NOT NULL,
+                    username TEXT NOT NULL,
+                    password TEXT NOT NULL,
+                    email TEXT NOT NULL PRIMARY KEY
+                );   
+                '''
+        )  
+
+
+        is_api_available = HttpSensor(
+            task_id='is_api_available',
+            http_conn_id='helson_api_avbl',
+            endpoint='api/'
+        )
+
+
+        fetch_user  = SimpleHttpOperator(
+            task_id = 'fetch_user',
+            http_conn_id = 'helson_api_avbl',
+            endpoint='api/',
+            method='GET',
+            response_filter=lambda response: json.loads(response.text),
+            log_response=True
+        )
+
+
+        extract_user_detail  = PythonOperator(
+            task_id = 'extract_user_detail',
+            python_callable = parse_user
+        )
+            
+     
+==================================================================================
+Why Airflow  :
+=====================
+We used OOzie or AWS Data Pipeline.
+
+But we were in need of the following  :
+-----------------------------------------
+**Better visibility of the workflow and configs
+**Better monitoring and statistics
+**Share common config/code between workflows.
+
+
+
+
+
+ We have below componenets in Airflow  :
+=========================================
+Webserver
+Scheduler
+Metadata - Db
+Web UI
+Executor
+Queue
+Workers
+
+DAG  ==> Consists of tasks ==> Each task is warpped into an operators
+
+An Operator  cab be of  : Executor / Sensor / Transfer type
+
+Each tassk cab be tested individually : airflow test dag_name task_id exec_date
+Task lauched as Sub process in airflow
+
+start_date +  schedule_interval  : Should be elapsed for the DAG to start executing
+So Start_date  : 2021/01/01 10Am + interval : every 10 mins ==> Starts its for run at 10:10 Am 
+
+Restarting DAG woudl run all the pending dag instance from the latest dag run (catchup = True / False decides this)
+
+Seq.executor(One task oafter the other)  & LocalExecutor(for parallel tasks in single machine)  & Celery Executor  (Execuste multiple task in multuple nodes)
+We have DaskExecutor  + Kubernetes executor as well
+
+
+Run infinte number of tasks : using CeleryExecutor  + needs somehing like Redis as queue to queue the task into it from where the tasks worul be picked by various Worker across diff nodes.
+                              We have seperate UI for celery called flower.
+
+Configure worker in each node which is part of the distrbuted run
+
+Worker_concurrency = 2 decides the number of task which can be executed in parallel by a worker node.
+
+Limitation  : The Dependency jar of each task must be pre-deplyed in each worker for the sucessfull execution of the task
+
+Parallelism : no of tasks whihc can run simultaneausly in the given Airflow installation : def  : 32
+
+dag_concurrency  = n  : Number of task to run in parallell for a single DAG. ie lets say we have 10 instance of the DAG and we can have only n number o task for that DAG to run in parallel across alts running instance : eef : 16
+This is applicable for all DAGs.
+We have this defined for a sepecific DAGs at the DAG sepecification itself
+
+max_active_run_per_dag = n : Defines the number of DAG instances for a DAG to run in parallel. 
+
+
+Advanced Concepts :
+========================
+Sub-DAGs ==> Grouping DAG within another DAGs : But they are not recommended at all in Production  : Risk of Deadlock , diff the maintain, complex. Sun DAGs use SeqExecutor by default. We cannot use local or clery for a subdag
+We use SubDagOperator for this  : Where we club multiple subtasks under one DAG(subDAG) and call a function within a main function to get us these subtask vai the SubDag
+
+We can extend baseOperator to create custom operators
+
+
+So we use TaskGroups mostly  :
+------------------------------------
+
+
+
+Sharing data within tasks using Xcom : Cross Comm allows sharing of small amount of data between tasks
+------------------------------------------------------------------------------------------------------------------------
+Xcom is infact stored as DB object within the metadata DB.
+The size of XCom varies with each DB we use for MetaData DB.
+Do XCom.push and Xcom.pull for adding and retrieving data between tasks respectively
+
+BranchPythonOperator  : Execute a task from a list based on some condition or based on the state of the previous task
+Define an Opeartor using BranchPythonOpeator  : This must call a fucntion which would return the "task_id" of the task t be executed .
+
+Trigger Rules  : 
+--------------------
+BY Def : A task would expect its immediate precceeding tasks to be executed. If any of the preceeding tasks fails then the current task would  in **Upstream task failure status.
+What if U need to execute a task based on some condition or state of the tasks in the preceeding list.
+Helps U change the default behaviour of the DAG. 
+Trigger task A if some condition occurs like failure of any of the preceeeding taks and trigger task B if all tasks succeeds.
+*** There are 9 different trigger rules.
+
+Diff trigger rules  :
+--------------------------
+***all_success : If all the upstream tasks pass then curr.task executes. if any of the above tasks fails then the curr.task will be in Upstream_failed state.
+***all_failed  : If all the above tasks failed the the curr task executes. if any of the above tasks succeeds then the curr.tasks is skipped.
+***all_done    : The curr tasks executes despite of the status of the preceeding tasks. As along as the preceeding tasks triggered then the curr task will be executed. even if they faile or succeeds or skipped. Bt all must be triggered atleast.
+***one_success : curr tasks executes as soon as any of the above task succeeds.
+***one_failed  : curr tasks executes as soon as any of the above tasks fails.
+***none_failed : as long as the above tasks succeeds or all skipped then the curr tasks executes.
+***none_failed_or_skipped  : as longs as atleast one parent succeeds and the rest are skipped then the curr tasks succeeds. There should not be any failure in above tasks.
+
+
+task_a/b/c ==> Task_D or Alter 
+
+Task_D when all succeeds. (so set all_success for this tasks as trigger rule )
+Alert  : when any of the above tasks fails(so set one_failed : as trigger rule)
+
+
+How to run spark workloads via Airflow :
+-----------------------------------------------
+Create a Spark Conn for the conn to Master node.
+How tasks are retried in Airflow.
+
+flight_search_ingestion= SparkSubmitOperator(task_id='flight_search_ingestion',
+conn_id='spark_local',
+application=f'{pyspark_app_home}/spark/search_event_ingestor.py',
+total_executor_cores=4,
+packages="io.delta:delta-core_2.12:0.7.0,org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0",
+executor_cores=2,
+executor_memory='5g',
+driver_memory='5g',
+name='flight_search_ingestion',
+execution_timeout=timedelta(minutes=10),
+dag=dag
+)
+
+
+The SparkSubmitOperator class includes useful attributes that eliminate the need for a separate bash script and calling it using a BashOperator.
+
+If you run a DAG on a schedule_interval of one day, the run with execution_date 2019-11-21 triggers soon after 2019-11-21T23:59
+The scheduler won’t trigger your tasks until the period it covers has ended e.g., A job with schedule_interval set as @daily runs after the day has ended. 
+
+Options to trigger a DAG manually  :
+======================================
+REST API endpoint : POST /api/experimental/dags/<DAG_ID>/dag_runs
+CLI : airflow trigger_dag <dag_id>
+UI
+TriggerDagRunOperator : if you are looking to let the external party indirectly trigger it themselves.
+
+HOw Restart in Airflow works  :
+=====================================
+We clear the failed tasks from the UI. This would let the schduelr to treat this task like it has not been executed at all. So it re-runs that task again.
+We can use CLI as well : airflow clear -s <start_date> -e <end_date> -t task_a <dag_name>
+
+
+Adv  of Airflow  :
+========================
+Main goal is of ease of Dependcy Mgmt.Pre Airflow time was difficult in dep.mgmt
+Templated Scripts for DAG  : Where the schdule time is injected during runtime.
+Operators.
+UI and logs
+Data Is Immutable and Idempotence
+The backfills are auto managed than doing it manually.
+
+
+Disadv Airflow  :
+======================
+diff to understand at first glance
+CI/CD are tricky
+Diff to test 
+Changing schedule interval requires renaming the DAG
+
+Idempotent tasks:
+=======================
+overwrite the corresponding partition.
+use UPSERT opeartion for DB
+Check for existing result before running the job
+
+
+
+
+
+ 
+ 

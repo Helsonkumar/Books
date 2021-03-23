@@ -1,0 +1,111 @@
+Snowflake Notes  :
+=========================
+When evaluating different solutions, potential buyers compare competencies in categories such as evaluation and contracting, integration and deployment, service and support, and specific product capabilities. 
+The database accommodates unstructured data very well, which has allowed us to use Snowflake for our data lake. Snowpipe and the use of directory stages makes data ingestion extremely easy. 
+We moved from a traditional self managed Hadoop platform to snowflake for all our data-warehousing needs. The results have been quite outstanding. 
+Overall SQL/Batch-Job failure rate has gone down to less than 3%, earlier it used to be in double digits.
+Also the amount of overhead and optimization work needed to run workloads has decreased. Data ingestion capabilities from various sources has increased."
+
+
+
+What do you like most about the product or service?
+The platform scales effortlessly and is very easy to tune with respect to capacity. The elastic nature of the cluster saves a ton of money as it grows and shrinks based on usage.
+
+
+
+
+Please explain the business problems or needs that prompted the purchase of this product or service.
+Our existing Redshift data warehouse was not scaling well and the cost trajectory was not satisfactory. 
+In addition, our DBAs were spending quite a bit of time with data management tasks (vacuuming, repartitioning, etc.).
+SqL based database engine required -supports and integrates with all major languages like spark, python or R -performs advance analytics and data science operations
+**Reporting, analytics, data-warehousing & finance-audits used to run on top of a Hadoop cluster which was insufficient to handle all the workload, so moving to a completely managed cloud based solution made sense.
+
+
+
+Limitattions :
+Stored procedure support
+Data in vendors cloud
+The overall management (role hierarchy, grants etc.) from the UI is not very clean.
+Need better integration with tools like Terraform so that infra management can be automated via code.
+
+
+
+If you could start over, what would your organization do differently?
+I might have been more formal in the selection process via an RFI. 
+We certainly explored other options but an RFI would have declared to the vendor that they were definitely in competition with other vendors, which could have resulted in better pricing.
+
+What one piece of advice would you give other prospective customers?
+Do an RFI or RFP to get most favorable pricing. Also, make sure to try the platform before making a decision as the platform has some very unique features.
+**Do not do user/role/warehouse/DB management from the UI, do them as code and from a version control system such as Git. So we can rollback to previous version incase of exigency.
+
+
+
+It integrates with many data analytics tools and data science languages. it is easy to deploy as it doesn't not require any infrastructure setup.
+
+Why did you purchase this product or service?
+Drive innovation
+Reduce time to market
+Drive revenue growth
+Improve business process outcomes
+Cost management
+Create internal/operational efficiencies
+Improve business process agility
+Enhance decision making
+
+
+
+
+What were the key factors that drove your decision?
+Product roadmap and future vision
+Overall cost
+Product functionality and performance
+Strong customer focus
+
+Which other vendors did you consider in your evaluation?
+Oracle
+Microsoft
+Amazon Web Services (AWS)
+
+How long did your deployment take?
+0 - 3 months (<3)
+
+What was your implementation strategy?
+Worked with just the vendor
+
+Product Capabilities
+Ability to access multiple data sources
+Administration and Management
+Flexible scaleability
+Variety of data types
+Workload management
+Traditional user support
+Exploratory user support
+Advanced Analytics
+Data Ingest
+Managing Large Volumes of Data
+Optimized Performance (Exploratory)
+Optimized Performance (Traditional)
+
+
+
+Snowflake used SQL based database engine for storing and retrieving data from the cloud.It helps get a lot of insights from the data,perform query based operations and 
+the level of automation and concurrency required to work on multiple segments at a time.It also provided features like per second pricing and flexibility to use big data platforms.
+It has its own cloud platform which signifies that there is no infrastructure required for setup and provided elasticity to support a lot of users and their applications."
+
+
+Use cases  :
+----------------
+We were not agile
+Things are not scalable
+Concurry use case 
+Storage use case 
+
+Snowflake  :
+Decouple Compute and Storage layer :Cost friendly
+Both the layers are independently scalable
+In cloudera we had to both storage and Compute bundled . So unncessary CPu for extra Storage were incurred
+Zero cpoy cloning
+Sinlge place of truth
+Simplicity  : Data At rest is encrypted
+Snowflake take crae of Upgrades  : Every weekly
+ So we built COE for Snowflake  : Governanace , rtraining, best practise

@@ -61,18 +61,18 @@ it enables decoupled, event-driven systems.
 ##############################################################################################################################################################################################################################################################################################
 Structured Streaaming Notes:
 Here consider the stream of records as the records appended to an unbounded table. ==> Input Table
-We transform and run query on top of this unounded table  ==> Result Table
+We transform and run query on top of this unbounded table  ==> Result Table
 We display or persist this result table ==> Output table
 
 Spark Streaming engine(SS) runs the incremental query on top of the input table to create a new Output table when even a new record is appended to the input table.
 
-Modes : Complete  / Append / Update ==> The way how the ifo must be display on the Output sink . The sink talk to Result table and nt the input table.
+Modes : Complete  / Append / Update ==> The way how the info must be display on the Output sink . The sink talk to Result table and not the input table.
 
 How Fault Tolerant is achieved:
 --------------------------------
 SS engine uses checkpointing and the Write A head log to keep track of the state of the records processed so far.
 
-Streming Source (assumed to have offsets management t be replayable)  ====> Streaming Engine(WAL + Checkpointing) ====> Sink (Idempotent)
+Streming Source (assumed to have offsets management to be replayable)  ====> Streaming Engine(WAL + Checkpointing) ====> Sink (Idempotent)
 
 So even under the condition of resatrt the same record is not reprocessed again.
 
@@ -182,7 +182,25 @@ The number of records within RDD is decided by the batch interval we pass for St
 
 ##############################################################################################################################################################################################################################################################################################
 
+Spark Streaming from Gerard maas :
+-----------------------------------------
+Prioratize th requirement for choosing the effective tool
+
+Spark Vs Kafka Streams
+
+Spark process data in the micro batch form  : 
+**Spark Streaming offers you the flexibility of choosing any types of system 
+If latency is not a significant issue and you are looking for flexibility in terms of the source compatibility,
+Same code an be used for both batch and stream processing
+API in Java scala Python
+highly flexible..
 
 
-
+Kafka Streams  : Works only for Kafka to kafka processing
+id latency is big issue and time frame is expected to be within milli seconds then go for Kafka 
+it is based on state storage 
+but compatibility with other types of systems remains a significant concern.
+Kafka is highly scalable uisng multitask implementation runnign in parallel. it is HYPER SCALABLE
+If you are dealing with a native Kafka to Kafka application (where both input and output data sources are in Kafka), then Kafka streaming is the ideal choice for you.
+API ony is Java and SCALABLE
 

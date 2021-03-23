@@ -1,0 +1,54 @@
+Data Engineering  :
+==========================
+
+Excerpts from various DE Blogs  :
+-------------------------------------
+https://towardsdatascience.com/scalable-efficient-big-data-analytics-machine-learning-pipeline-architecture-on-cloud-4d59efc092b5
+
+The Key Charteristics of a Data Pipeline must be the following  :
+Must be easily accessible
+Must be Scalable
+Must be efficient
+Must be aided with Monitoring
+
+Collection layer + Data Ingestion  + Data Cleaning (makinf it helpul for computation ) + Computation(Analytics layer) +  Insight (Visualization layer)
+
+Data Engineering: collection, ingestion, preparation (~50% effort)
+Analytics / Machine Learning: computation (~25% effort)
+Delivery: presentation (~25% effort)
+
+Data Lake vs. Data Warehouse
+
+EDA  : More of like visualizing data set and identifying any gaps in the same
+
+Scale and efficiency are controlled by the following levers:
+Throughput depends on the scalability of the ingestion (i.e. REST/MQTT endpoints and message queue), data lake storage capacity, and map-reduce batch processing.
+Latency depends on the efficiency of the message queue, stream compute and databases used for storing computation results.
+
+Architecture has always been trade off between Performance and Cost
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**************************************************************************************************************************************************************************************************************************

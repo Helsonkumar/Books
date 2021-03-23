@@ -367,7 +367,7 @@ This maked your system highly available and less error prone.
 
 Scaling Web apps:
 ========================
-In egenral a Web app server has a limitation to serve the number of connectiosn per second at a time.
+In general a Web app server has a limitation to serve the number of connectiosn per second at a time.
 
 it is driven by factors like Number of sockets..cores per socket....Threads per cores
 The latency of app is driven by the time in web app server and the time spent in DB.
@@ -376,6 +376,9 @@ No of user request served by a core per second * number of cores.
 
 
 
+Lambda Architecture  :
+https://www.cuelogic.com/blog/lambda-architecture-in-big-data
+========================================================================================================
 
 
 

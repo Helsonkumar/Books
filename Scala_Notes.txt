@@ -1,0 +1,141 @@
+Items to be Explored  :
+============================
+List
+Streams
+Option
+Either
+
+
+
+
+
+Scala Notes:
+==================
+Type Classes : helps u extend a type with new functionality without even changinh the type or its class definition.
+Helps u inject new functionality for the class without modifying the code for the type for which the fucntionality is defined.
+We need to get the compiler do all the static type checking . Not the type checking during runtime
+
+
+FP in Scala REDBOOK notes  :
+================================
+Use functions as first class citizens.
+Write loops via recursive functions
+  Loops are supported by the helper fucntions in general.
+  Use tail recursion for optimization.
+  
+High Order Function  : Function whihc accepts another function as its argument  
+
+Polymorphic Function  : 
+
+Function Literals : Anonymous class with method called apply defined in it
+
+Companion Objects to hold static elements : Where we put convinient function to work with values of the data type
+Consider companion object in the list interface. We have functions to work with various values(variants) of the List interface.
+
+Fucntional DS are immutable : existing ref are not changed by the operation on the DS
+FP DS can be shared with out any fear since they are immutable. so data copying is needed at point of the program
+
+Writing purely functional data structures that support different operations efficiently
+is all about finding clever ways to exploit data sharing
+
+Argument Groups
+
+Currying  : def func(arg1)(arg2) ==> implies that func acceptys an arg and then returns another function which accepts another arg2.
+
+When we find some duplication in the code(Consider suma dn Product function of the list interface)
+we can pull the subexpressions away and have that defined as function.
+** Abstracting over similarities.
+
+ADT  : Is just a Data Type defined with on or more constructors (case class extending the sealed trait)
+Each Data Typr id dum or union of its constructors.
+Each constructors is product of its argument
+
+**Scala encodes data constructors via SubTyping : List[Nothing] List[A] etc,,,for List Type
+
+**Smart constructors for Streams.
+
+**Some Streaam opeartion would not be Stack Safe  : IN case of infinite Streams
+
+
+
+
+List  : LIFO access pattern
+=================================
+Time  : O(1) from head, prepend, tail
+        Other are  : O(n)
+		
+Space  : Space sharing . Many operations are either zero- or constant-memory cost.
+
+The functional list is characterized by persistence and structural sharing, thus offering considerable performance and space consumption benefits in some scenarios
+
+Option[+A] and Either[Exception, A]
+
+Strictness and laziness
+==============================
+
+
+
+
+How to make Any Stateful APis purely functional :
+=======================================================
+Goal is to make an API ref.transparent.
+Because this would make the API(method) to be easy to reason about and it would always return the same result w/o side effects which is easy to test and reproduce any bugs during testing in a reliable way.
+Idea : Have the API compute its next state instead of doing mutation in place.
+But efficiency loss would come due to creating this new state of an API . But this could be handled by using purely functional Data Structures.
+
+Abstract away the state mutation and pass on that state mutation as seperate value to the client
+So u decouple the concern of calculating the NEW STATE and concern of communicating that NEW STATE CHANGE to other part of the program.
+Consider the example of Randome number generator example.
+At end of each nextInt() the state of RNG would change its internal state. So this would result in diff 
+
+State-action or State-transition
+
+type Rand[+A] = RNG => (A, RNG) : Type alias
+
+
+
+
+
+
+
+
+
+
+Java Generic and Type Class  :
+================================
+https://dev.to/jmcclell/inheritance-vs-generics-vs-typeclasses-in-scala-20op
+
+Java Generic  : Parametric Polymorphism
+Type Class    : Ad-hoc polymorphism
+
+Polymorphism : use generic code for various types
+
+Subtype Polymorphism(Inheritance) :
+   when a name denotes instances of many different classes related by some common superclass.
+   
+   
+Parametric Polymorphism (Generics) :
+   when one or more types are not specified by name but by abstract symbols that can represent any type
+   Parametric polymorphism allows a function or a data type to be written generically, so that it can handle values uniformly without depending on their type.
+   use in the place  : Where U dont actually access any methods or parameters in the type (generic type) during runtime.
+   Use it when U can handle any type produced in place of any generic type UNIFORMLY....
+   Parametric polymorphism allows us to reduce boiler-plate by writing code that can work uniformly over a range of types by using type parameters to templatize the code
+   ******An Array[T] type can work for any type T because its implementation doesn't depend on any type-specific behavior - the Array implementation is uniform across all types.****
+   
+   
+Ad-Hoc Polymorphism (Type Classes) :
+   In other words, we're providing polymorphism over an interface without using inheritance, but we maintain the ability to have different implementations across types for the set of required of operations defined by our type class interface. 
+   Furthermore, we maintain the ability to easily extend the type class membership at-will, ie: in an ad-hoc fashion.
+   
+   Problem  : We need different fucntionality for the same type flexibly and we need these fucntionality even for the classes for which we dont have the access.
+   
+   Defines a common interface for an arbitrary set of individually specified types 
+   What if we need to be able to create methods/functions whose parameters can be of different unrelated types (with regard to subtyping) and where the implementation is also type specific, ie: not UNIFORM?
+   So general pattern  : Create a trait with type . have the memebers to extend the trait and give the implementation of the methods. so they become part of the interface.
+                         Use this member in the place where the trait type is expected.
+   Type class enables us to extend the fucntionality of any Type without changing the codebase of that type(ie without enforcing inheritace on that actual type like Int, String)
+   Instead we create a wrapper on top of that type and inject the new fucntionality into this wrapper type.
+
+
+   
+      

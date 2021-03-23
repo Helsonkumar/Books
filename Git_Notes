@@ -1,13 +1,14 @@
 How to exclude all local commits and add only the latest commit to remote repo from local repo:
 ----------------------------------------------------------------------------------------------------
-git reset --soft/--hard origin/master 
-(soft : preseves ur changes , but resets the commit ==> make the remote repo to look less noisy)
-(hard : removes ur local changes and resets ur commit ==> you will loose your changes in local after reset)
+
+git reset --soft/--hard/--mixed(default) origin/master 
+(soft : preseves ur changes , but resets the commit , But chages would remian in Index(staged)==> make the remote repo to look less noisy)
+(hard : removes ur local changes and resets ur commit, Changes would be unstaged ==> you will loose your changes in local after reset)
 
 
-To remove one of the file or folder which has bees staged :
+To remove one of the file or folder which has been staged :
 -------------------------------------------------------------
-git reset 	HEAD -- file/folder_name
+git reset HEAD -- file/folder_name 
 
 
 
@@ -54,6 +55,18 @@ This example is very useful if you want to know changes that have occurred withi
 printing logs of commimt:
 --------------------------------
 git log --pretty ---oneline
+
+
+Cloning vs Forking  :
+=========================
+Forking  : Orginla Repo  => fork  => get a copy of that state in your github acct => (A conn exists between ur github copy and originla repo)
+==> it copies all includiing pull request, commits,etc==> U can clone the forked copy of urs in local machine==> make changes  ==> push changes to ur forked copy ==> create pull request to the originla repo 
+Great for Open source contribution
+
+Clone  : Just clone it  originla repo  ==. no conn existing betwen your clone copy in local machine and the original repo  => 
+
+
+
 
 
 
