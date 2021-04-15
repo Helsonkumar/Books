@@ -88,22 +88,22 @@ The cluster manager simply allocates resources and launches the executor accordi
 
 RDD  : Lazily evaluated  , Immutable , In-Memory
 
-Lay evaluation  : helps us collate or combine operation that does not require comm to driver and execute them in single pass thru of data.
+Lazy evaluation  : helps us collate or combine operation that does not require comm to driver and execute them in single pass thru of data.
 we can chain together operations with narrow dependencies and let the
 Spark evaluation engine do the work of consolidating them.
 
-Fault Tolerant  : Spark would bnot privde incorrect result in the event of host machine failure.
+Fault Tolerant  : Spark would not privde incorrect result in the event of host machine failure.
 Bcz each partiton has its own dependcy info to recalculate them if lost.
 
 An RDD interface has 5 major properties  : List of partitons , Dependent partitions , fucntion for iteraor , partitioner , Prefered location (gives the lcoation info)
 
-Spark�s performance advantage over MapReduce is greatest in use cases involving
+Sparks performance advantage over MapReduce is greatest in use cases involving
 repeated computations.
 In mapreduce the intermediate result is wirriten to disk for each pas thru of data.
 
 Option for mem-mgmt :
 ----------------------
-Inmemory deserialized : data is stored in the memory in the form of object. CPU efficine t. But not memory effective.
+Inmemory deserialized : data is stored in the memory in the form of object. CPU efficinet. But not memory effective.
 In-memory Serialized : Objects in RDD in the form of deserialized stream of bytes.
 On Disk  : RDD partitons too lrage can be stored in disk.but can be more fault-tolerant for long sequences of
 transformations
@@ -166,9 +166,24 @@ References to objects — instances of classes. These were created by the driver
 
 
 
+Spark SQl  : Is similar to RDD excpt they have schema information . 
+This Schema info is used for effective Storage layer(Tungsten layer) and Catalyst Optimizer.
+The schema information, and the optimizations it enables, is one of the core differences
+between Spark SQL and core Spark.
+
+Txn on DF is More of relational Type and on DS it is of Functional Type.
+
+DataFrames are Datasets
+of a special Row object, which doesn’t provide any compile-time type checking.
+
+HIve Context : SQlContext  : HiveContext has much better SQL parser fucntionality and enalbes access to Hive based UDFs.
+
+
 
 For Spark SQL  : The fulcrum is the "DataSource API". So any format of data can be analyzed. 
 So user must implement a plugin using this DataSource API to analyze a custom formatted data.
+
+Unlike RDD, using DF would allow the Sprk Optimizer to analyze our code and data effectively which allows for a new class of optimizationss
 
 RDD , DataFrame,  SQL
 
@@ -189,10 +204,11 @@ Unresolved Logical Plan  ===> Resolved Logical Plan ===>  Optimzed Logical Plan 
 
 
 Physcial plan  : Cost based model  : Its does smoething like Join Selection
+Cost based optimization  : Considers data distribution unlike rule based optimization
  But rite now we dont do consideration of diff rules for cost optimization.
  Instead we currently generate only one Physical plan and we stck to that.
  
-*** Step 1: User code is abstracted as Tree despite of the language in whihc it is written
+*** Step 1: User code is abstracted as Tree despite of the language in whihc it is written (Abstract Structure TYree : AST)
 
 *** Step 2  : Transformation  : Logical plan to physical plan (using strategies) Implemented using Scala partial function and Pattern matching.
 
@@ -204,20 +220,22 @@ so these rules are applied in batches to batch of rows.
 
 Looks like the data layer or storage layer statictics is very imprtatnt to decode the effective query plan.
 
-But the storage layer statistics may change at nay point of time and it is out of Spark's control
+But the storage layer statistics may change at any point of time and it is out of Spark's control
 
 So Databricks brought in 2 solutions: Delta lake and AQE
 
 Delta lake  : Gives ACID model on Spark data. It is an open source storage layer. Better optimization oppurtunities.
- 
- 
- SHUFFLE  or BROADCAST divides the query execution into stages.
+
+
+
+
+ SHUFFLE  or BROADCAST divides the query (Job) execution into stages.
  Intermediate results are materialized at the end of query stages. (Query stages points are the pipeline break point)
  Query stage point is optimal for runtime optimization.
  
  Unlike WE HAVE BEEN THOGUTH, intermediate results between stages are written to Disk, so the optimal size of the data is calculated for the AQE.
  
- So the query plan is re-calculated at the end of every stages.
+ ***So the query plan is re-calculated at the end of every stages.
  
  Effect of partition being too small and too large :
  ===================================================
@@ -233,7 +251,120 @@ Delta lake  : Gives ACID model on Spark data. It is an open source storage layer
  
  
  
+ Spark Memory Management  :
+ ==============================
+ How spark arbitrate memory between EXECUTIUON and STORAGE:
+ ----------------------------------------------------------------
  
+ Memory can be broadly classified into EXECUTION and STORAGE Memory
+ Execution memory  : Used while performing some operation like grpBy , sort,etc
+ Storage  : For caching the intermediate result
+ 
+ Prior to Spark 1.6 :
+ When Exec.mem exceed it usually gets spilled to disk and then read back to send the result back to User
+ When Storage mem execceds then the LRU policy is applied to evict the blocks of data in storage memory
+ 
+ In latest:
+ -------------
+ Both execution and storgae share the same memory space.
+ When there is a memory contention from both execution and storage then the blocks in storage is evicted. Not the execution data is spilled to disk.
+ 
+ But we also enforce some configs : which helps a peercentage of storage blocks  to retained when there is a memory contention.
+ This is helpful for apps like ML whihc greatly relies on cached data for iterative computing.
+ 
+ 
+
+ How spark arbitrate memory between tasks running in parallel:
+ ----------------------------------------------------------------
+ In Spark 1.0 the static assignemt  is used  : 1/N of the memory is assigned for each task statictly . N is the number of cores.
+ Post Spark 1.0  : Dynamic assignemtn is effectiev  : Memory is dynamically assigned (in equal portion ) for each actively running task. If there is only one task then 1/1 (whole) memory si assigned to that single task.
+ 
+ Static assignment: Is simple to implement . But does not handle straggler task whihc starves for memory. But dynamic assignement does.
+ 
+ 
+How to arbitarte memory for operators running in a task :
+---------------------------------------------------------
+ds.grpBy.agg.sort
+ 
+We have diff operators liek GrpBy + agg + sort
+ 
+Whilst agg , the operator would use all the pages in memory to hold the HashMap is operates with.
+So when all pages in the meory is occupied then Sort operator would not have any memory to work with.
+So it fails.
+
+So the idea is to share the meory pages mutually across all operaotr. But when the pages are exhaused then remaining operators would starve and fail.
+
+So we use Coperative Spilling  : When there is a need for memory from other operators liek Sort, the agg  would spill it held data to disk and reassign that page to the sort operation co-operatively.
+
+Summ :
+-----------
+So always avoid statictally assigning memory.
+ 
+ 
+ 
+project Tungsten  :
+======================
+Unlike storing JVM object s(Which consumes more memory even for smal string like "abcd" .ie int are wrapped as BoxedIntegers and then stored) it stores the primitives in their native form so memory footprint is comparetively lesser.
+Cache aware computation  : helps in lesser memory tracing
+Off heap storage  : Off heap space can be used for storing cache. But usually heap storage(spark.executor.memory) is held untill JVM lifetime. when the JVMN is killed (Executor is killed then the cache data in the heap storage is erased.) 
+But the items in off heap storage still remains effective.
+Off heap is available since spark 2.0
+
+
+****How to trouble Shoot OOM  :
+---------------------------------------------
+Case 1: Smaller partitions saved our job
+-------------------------------------------
+First, we check the basics: How much java heap do we allocate (using the parameter spark.executor.memory) and what is the share usable by our tasks (controlled by the parameter spark.memory.fraction)
+Check for the memory consumption in Driver and Executor
+ssh to respective nodes and do "top" command
+
+Remote blocks and locality management in Spark
+Thus, to avoid the OOM error, we should just size our heap so that the remote blocks can fit. ie the blocks whihc are present locally for executors.
+Avoid allocating lareg remote blocks in memory  :  spark.maxRemoteBlockSizeFetchToMem.
+Reduce the size of partitions
+
+
+Case 2: Splitting the humongous objects
+-------------------------------------------
+The GC stealing our memory
+We need a better understanding of G1 GC
+
+Humongous fragmentation : 
+G1 partitions its memory in small chunks called regions (4MB in our case).
+When allocating an object larger than 50% of G1’s region size, the JVM switches from normal allocation to humongous allocation. This process requires contiguous free regions.
+There is no process to gather free regions into a large contiguous free space. Even a full GC does not defragment
+
+use parallel GC instead of G1
+
+Storing 2-D arrays wor any arry DS would need contiguos memory  : So even when we have *Gb of free memory we were not able to allocate memory for an array of size 256MB which needs contiguos space worth of 256MB
+So we tried splitting this large array into smaller one.
+
+
+
+
+
+
+
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
 
 AQE  : Adaptive Query Execution in Spark 3.0
 =================================================

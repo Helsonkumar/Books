@@ -131,3 +131,59 @@ git push https://github.com/Helsonkumar/spark-on-k8s-gcp-examples.git master
 
 
 
+
+Maven  :
+==============
+When Ur maven dependecy has its own dependecny then that becomes the transitive dependency for U.
+
+ClassDefNotFound , MethodNotFound , NoSuchMethod found  : Symptoms of Dependcy issues
+
+maven Dependency Conflicts  :
+---------------------------------
+Always define the scope of ur depedency. So it does not become unnecessary transitive dependcy for Ur lib user.ie. <scope>test<scope>
+
+mvn dependency:tree -Dverbose -Dincludes=com.google.guava:guava
+
+Imagine When 2 Dependency has transitive dependency of the same jar but of diff version. 
+A needs version 10
+B needs version 8
+
+When version 8 and 10 are not compatible then if version 10 is in the classpath first, then that would be utilized by B (which depends on version 8), but since version 10 is not backward compatible, we may get such errors like NoMethodDefinedFound, etc
+
+So ideally use same version(newest)  for all ur Dependencies  : Use Enforcer plugin to achiev this : mvn verify ==> tghis would tell if there is any dep conflicts in our POM file.
+
+Use <exclusions></exclusions>  : To exclude conflicting dependencies
+
+<DependencyManagement></DependencyManagement> : 
+----------------------------------------------------
+So inorder to enforce all dependecny(inlcuding transitive) are of same version newest or older, we use dep.mgmt : when maven comeacross a Dependency it would simply check if there is a mention in Dep.mgmt tag for that jar.
+Then it would simply overwrite that jar for all conflicting versions.
+
+Shade + Relocation  :
+
+BOM file for multi module project  : Enforces that the modules under the multi module project must all have the same version.
+
+
+Shading in Maven  :
+========================
+Imagine the below scenario  :
+
+Lib X  ==> Depends on Lib A  + B
+
+Lib A  --> Depends on Z.v2
+Lib B  --> Depends on Z.v1
+
+So in class path we would end up with both classes of the same package structure and with the same name.
+But they both are  not backward compatible.
+So if V2 lies first in the classpath, then Lib B would take Z.v2 for its need which may not be backward compatible.
+So this  would break Lib B. The classes with the same name and package structure laying in the classpath is called SHADING.
+
+So we need to instruct the lin devlopers to rename the artifacts and rename the packages or move to diff packages for every release(if it is not backward compatible)
+So we can use the respective reference of those new packages in our code.
+but lib delopers would not be asked to do it. We have plugins which can be used at client site, so the conflicting libs abd its transitive dependices would be auto renamed to new package with the prefix as the project title.
+And the reference of those packages in the code base would be updated with the new package reference by the plugin itself.
+The transitive dependencies would be directly included in our code client code base intead of treating that as dependency.
+
+So this can help us avoid Dependency conflicts and Shading classes.
+
+

@@ -15,23 +15,70 @@ Things to be explored:
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-
+Maintainable code  :
+=========================
+Code must be easy to maintain means it must be easy to read, easy to dissect to identify the exact piece of code to be modified for the given change request.easy to troubleshoot,
+They will generally employ a range of tools and techniques, such as MVC patterns, object-relational mapping tools, and TDD, which offer the promise of more maintainable code.
+Roughly speaking, maintainability is inversely proportional to the amount of time it takes a developer to make a change and the risk that change will break something. 
 
 ##########################################################################################################################
 SOLID Principles:
 ##########################################################################################################################
-SRP : Single Responsibility Principles
+SRP : Single Responsibility Principles : "Grouping together things that change for the same reason."
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Always create a class with only one responsibility. This makes Ur code or class to be easily managed.
+Always create a class with only one responsibility. This makes Ur code or class to be easily managed and maintain.
 E.q : Consider a Journal Class where we add and remove entries via add and remove method.
 Avoid adding additional responsility like Saving and Loading a Journal to/from a file or memory.
-This makes the code easy to manage.
+This makes the code easy to maintain.
+
+Imagine you have a class that does several things in your program.
+ I like to call these a “supreme class”.
+ When you have to update/change the code (and you will), too many responsibilities will make it much more difficult to isolate and fix the problem or update the program.
+
+SRP demands a strict modularization and, in turn, creates the ability to piece a program together with different sections of functionality.
+
+
+Cohesion  : The Degree to whihc the elemenst within modules are related to each other.
+A module should not have any other added resp or functionality like Utility function, then its cohesion is low.
+We need to have high cohesion to have easy maintainability and reusability of the code.
+
+A class should have only one reason to change. Should care about only one resp.
+
+****SRP can be done correctly if U understand the Domain 
+
+SRP prevents side effects of future change: Effects that would impact the dependent class when the main class is changed.
+
+E.g : Intermixing presentation logic with the business logic in a method.
+This implies that the method is bound to change when either business or presentation logic is changed.
+In other words  : A method must do only one task.
+
+Objective  : A change must impact only one class. The resp should not have spread acrss multiple class.
+Does not mean that a class must have only one method.
+"Grouping together things that change for the same reason."
+
+Disadv if this is not followed:
+====================================
+Diff for other devlopers to understand the code. Code quaity becomes less(cohesion)
+Diff for them to change
+Diff to write unit test the class or method with more than one resp.
+
+A description of the class should not have phrases like AND OR.
+Class or method should not look large.
+
+Dis Adv  SRP  :
+====================
+Noumber of classes become huge
+The interaction of classed become classes.
+A single class would have multiple dependency classes
+
 
 
 
 Open Closed Principle:
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Open for extension and closed for modificcation.
+software entities (classes, modules, functions, etc.) should be open for extension, but closed for modification
+
+Inheritance is only one way to implement the Open Closed Principle. 
 
 Instead of modifying the existing code for adding new fucntionality, make a Gnereic interface and have that extended 
 by the concrete class with new functionality.
@@ -43,6 +90,17 @@ Liskov Substituion Principle:
 Simply states that we must be able to replace a Sub clas in place where a Base class is expected.
 The Behaviour of the method into which the items are substituted must be consistent(mst give appropriate result) with both Base class and Sub class. 
 
+Means inorder to consider subclass S of Super type T to be replacable in place of SuperClass T...Then it must meat the below principle.
+
+A provable property of Super type T must be a provable prooerty for Subclass S as well.
+
+Ie. Object[] can accept any object like String, Int, etc
+But int[] cannot accept anything other than ints.
+So int[] could not be considred as subclass of Object[]
+
+x,y of non-null ref can be considered equals if x.equals(y) && y.equals(x) are both TRUE.
+
+
 
 
 Interface Segregation Principle:
@@ -53,12 +111,17 @@ If this is extended by a OldFashionedDevice then it must implement Scannng featu
 That would not make any sense.
 So design Ur interface sensibly.
 
+Used to tackle the low ochesion problem we face. ie. clients enforeced with more responsibilities which they are not interested in.
+
 
 
 Dependency Inversion Principle:
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Simply states that the High level modules must not depend on the low level components.
-Code for interface as method parameter instead of the low level discrete type.
+Code for interface as method parameter instead of the low level discrete type. Tis makes ur code loosely coupled.
+Like Dep.injection we have in Spring : We code for interface for dependencies rather than the specific type.
+
+
 Think of Relations and FindRelations example.
 Low Level : Which simply exposes a Data structure or storage 
 High level : Which utilizes the low level componenet one.
@@ -72,12 +135,70 @@ Gamma Categorization
 3.Behavioural pattern : Each pattern is unique.
 
 
+
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Creational Pattern :
+DesignPatterns  :
+the objective of any Design pattern is to follow SOLID principle in the code base.
+Avoid making changes to the existing code.
+Adapt """Composition over Inheritance""" style of coding.
+
+Composition Over Inheritance :
+===============================
+Instructs that classes must exhibit polymorphism by adapting the style of implementing various interfaces with the desired functionality that thru inheritance of base or abstract class.
+
+So have Your functionality defined in the form of interfaces than in the form of abstract class.
+
+A class that has ref to an interface can support impl of that interface which can be delayed till runtime.
+This forms the basis of the Dependency Injection.
+
+Dis Adv of Inheritance  :
+------------------------------
+Tight coupling between super and sub class. The change in super class would influence the sub class too.
+You can't change the implementation inherited from super classes at runtime (obviously because inheritance is defined at compile time).
+Inheritence exposes the protected items of super class to subclass which breaks the encapsulation.
+
+On the other hand Object composition is defined at runtime through objects acquiring references to other objects.
+In such a case these objects will never be able to reach each-other's protected data (no encapsulation break)
+implementation dependencies will be a lot less than in case of inheritance.
+
+When to use inheritence  :
+----------------------------
+use when U need all fucntionality of the superclass in the subclass too.
+Where u want to treat of replace subclass in place of superclass.
+think of "IS-A" relationship.
+
+When to use Composition :
+------------------------------
+Composition is when your objects consists of another, or "HAS-A"
+***Composition has the benefit of easy multiple inheritance.(In general U can have only one abstract class). 
+You can avoid breaking change to an API if any of the superclass is changed.
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Creational Pattern : 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------d
+Creational patterns abstract the object instantiation process. 
+They hide how objects are created and help make the overall system independent of how its objects are created and composed.
+
 ****************************************************************************************************************************************************************
 Builder Design Pattern:
 ****************************************************************************************************************************************************************
+Limitation of creating object if only need to be done by using constructors.
+
+"Seperate the construction of a COMPLEX objects from its representation. So the same construction process can used to create diff reepresentation"
+
+Think of telescopic constructor  : Where we have multiple constructors for the same object based on the parameters passed in.
+So this would make the code with multiple constructirs or infact would not even compile.
+
+So to avoid this issue we use builder pattern.
+
+So in general  : We would have a builder class within the same object class and invokes that bulder class method.
+Each method relates to one property or parameter we would have passed via constructors otherwise.
+The finally call the build() method on that builder instance to create the final object class.
+
 Motivation :
 To construct an object piebce by piece. 
 Think of StringBuilder to construct a String with "N" arguments.
@@ -113,10 +234,20 @@ Multiple builder under a common Primary builder.
 ****************************************************************************************************************************************************************
 Factory  Pattern:
 ****************************************************************************************************************************************************************
+factory method focus on the use of inheritance to decide the object to be instantiated.
+Here the common piece of code used or shared across the concrete object factories is held by the interface or abstract class.
+The concrete factories have the code specific for the specific implentation.
 
+abs class  => doSomething( createproduct())
+              abs createProduct() 
 
+concrete class1 extends abs class (implements createproduct())
+concrete class2 extends abs class (implements createproduct())
 
+So part of the object creation is held by the interface or abs class.
 
+But in AbstractFactory pattern  : The complete object instantiation is handover to the subclass. No common code is shared by the interface. Use it when U need to create bunch or families of related onjects.
+Each family has their own ConcreteFactory class.
 
 
 ****************************************************************************************************************************************************************
@@ -147,26 +278,26 @@ The Composite simply meaant for Child management....The actual operation is assi
 
 
 ****************************************************************************************************************************************************************
-Factory  Pattern:
+Factory  method Pattern:
 ****************************************************************************************************************************************************************
 
-When U want to move the object cration logic to some other seperate code then we will use Factory Design pattern.
+When U want to move the object creation logic to some other seperate code then we will use Factory Design pattern.
 
 Simple Factory :
 --------------------
 Given a String it will create an instance of a class.
 We usually have this in a static method inside a  class.
 
-Simplefactory : Know the list of subclasas for which it will cerate an instance.
+Simplefactory : Know the list of subclass for which it will cerate an instance.
 Factory : The object creation is delegated to its subclass.
-          The list of sublcasses for whihc the instance need to be created is not known in advance.
+          The list of sublcasses for whihc the instance need to be created is need not to be known in advance.
 		  
 		  
-Factory design Pattern :  Here the ceraetion of objects is delegated to a subclassCreatorFactory.
+Factory design Pattern :  Here the creation of objects is delegated to a subclassCreatorFactory.
 Each subclass pertains to a subClassCreator.
 Adv : The object instance of new class is all about adding new subclass and its relevant subClassCreatorfatory class.
 This will make no code change to the interface for any new subclass being added.
-DisAdv : But for every new obj creation we need to add new subclass factory.Bu this can be even mitigatd by adding new parameter to the method.
+DisAdv : But for every new obj creation we need to add new subclass factory.But this can be even mitigatd by adding new parameter to the method.
 
   
   
@@ -174,47 +305,264 @@ DisAdv : But for every new obj creation we need to add new subclass factory.Bu t
 ****************************************************************************************************************************************************************
 Abstract factory  Pattern:
 ****************************************************************************************************************************************************************
+"Provides an interface to create families of related objects instead of providing the concrete class"
+
+Helpful when we need to create families of related objects.
+
+The Abstract Factory design pattern solves problems like: 
+How can an application be independent of how its objects are created? 
+How can a class be independent of how the objects it requires are created? 
+How can families of related or dependent objects be created?
+
+The abstract factory pattern provides a way to encapsulate a group of individual factories that have a common theme without specifying their concrete classes
+The client does not know (or care) which concrete objects it gets from each of these internal factories, since it uses only the generic interfaces of their products
+
+This pattern separates the details of implementation of a set of objects from their general usage 
+
+
+families  : Set of Objects....each set means a family
+
+Set(A1,B1) : We have concreateFactory1 to create this set of related objects
+Set(A2,B2) : We have concreateFactory2 to create this set of related objects
+Set(A3,B3) : We have concreateFactory3 to create this set of related objects
+
+Used when we a class must create more than one object or combination of obejcts (Consider MAcOS + Windows + Linux contorls+buttons e.g)
+
+Abstract factory ==> has multiple implementations called Concretefactory(to provide grp of concrete objects)
+
+
+
+
+Allows us to centrlize what type of objects must be created at one single point.
+
+
 Basically used to create a set of related objects .ie. We have 2 object in the same class.
-So we have diff creatwor factory for diff combinationof classses.
+So we have diff creator factory for diff combination of classses.
 
-public tyepA
-public typeB
-
-A1 extends A
-A2 extends A
-
-B1 extends B
-B2 extends B
-
-public abstract class objCreator {
-
-  typeA a;
-  type B;
-
-}
-
-
-
-
-public class Comb1Creator extends objCreator{
-     //* for A1 and B1
-}
-
-
-public class Comb2Creator extends objCreator{
-    // * for A2 and B2
-}
 
 
 ****************************************************************************************************************************************************************
 Prototype  Pattern:
 ****************************************************************************************************************************************************************
+Helps U create a new object from the existing one.
 
-When we find the 
+Considr where U need to create many objects each with almost same configuration / structurwe except few diff.
+In that case we dont have to construct them with same repatable code for identical arguments except the changed argument.
+We can use ProtoType patern.
 
+"Specify the kinds of Objects to create using Protypical instance and create new objects by copying this prototype"	  
 		  
-		  
+
+****************************************************************************************************************************************************************
+Clone  Pattern:
+****************************************************************************************************************************************************************
+Helps
+
+
+****************************************************************************************************************************************************************
+SingleTon  Pattern:
+****************************************************************************************************************************************************************
+Helps
 
 
 
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Structural Pattern : 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------d
+Structural patterns explain how to assemble objects and classes into larger structures while keeping these structures flexible and efficient.
+
+In creational pattern we have seen that we can make our code extensible(introduce changes without making changes to the existing code) 
+by relying on abstract methods or classes where we can foresee the furturistic changes what our items can undergo.
+
+But sometimes we would be in need to make changes to the existing components where we cannot foresee the futuristic changes.
+****************************************************************************************************************************************************************
+Adapter Pattern
+****************************************************************************************************************************************************************
+
+
+
+
+****************************************************************************************************************************************************************
+Bridge Pattern
+****************************************************************************************************************************************************************
+"" Decouple an abtractions from its implemntation so 2 of them can vary independently""
+ 
+use this pattern  : 
+When U see that Ur existing interface is extendsing or evolving in diff independent dimensions.
+Think of a class which can interact with various DBs. So the DB side is one dimension.
+So extending and implementing new methods inside the interface of the new functionality would result in subclass to be modified to adapt the changes.
+The more complex the change is less maintainable the code becomes.
+
+When U want to extend both Abstract class and Concrete class to evolve independently 
+
+So this pattern advice us to abstract the dimension in to Two main pillars : ABSTRACTOR and IMPLEMENTOR.
+
+The abstrcator does all the main business logic and it takes in (HAS-A) or composed of an interface of the implementor.
+
+Implementor  : Holds the common aspect of diff implementations.
+
+it follows the composition pattern.
+
+So both abstractor and implementor can extend at their own and it would impact the existing class.
+
+The change in the interface dimention would result in more classes to be created for the new fucntionality.
+Think of cartesian product of classes.
+Addition of new shape types or color types would result in growing hierarchy exponentially.
+
+So the class is extended in 2 independent dimensions. (Shape + Color)
+
+So the color related code and shape related code can be extracted in their own class.
+
+This avoids creating or maintaining more number of classes.
+
+Imagine : Shape and Color example  : REDCircle  + RedSquare  + BlueCircle +...etc
+
+Imagine  : Remote and Device scenario.
+
+Each remote behaves specifically with device.
+So In general we would end up with cartesian product of the Remote and Device . That would be catstrophic if the number of those classes are increased.
+
+
+
+****************************************************************************************************************************************************************
+Decorator Pattern
+****************************************************************************************************************************************************************
+"Decorator is a structural design pattern that lets you attach new behaviors to objects by placing these objects inside special wrapper objects that contain the behaviors"
+
+
+
+
+
+****************************************************************************************************************************************************************
+Facade Pattern
+****************************************************************************************************************************************************************
+"Facade is a structural design pattern that provides a simplified interface to a library, a framework, or any other complex set of classes."
+
+The Facade provides convenient access to a particular part of the complex subsystem’s functionality. It knows where to direct the client’s request and how to operate all the moving parts.
+
+Use the Facade pattern when you need to have a limited but straightforward interface to a complex subsystem.
+Use the Facade when you want to structure a subsystem into layers.
+
+Client= => facade ==> Complex Subsystem
+
+
+****************************************************************************************************************************************************************
+FlyWeight Pattern
+****************************************************************************************************************************************************************
+"Flyweight is a structural design pattern that lets you fit more objects into the available amount of RAM by sharing common parts of state between multiple objects instead of keeping all of the data in each object."
+
+An object that only stores the intrinsic state is called a flyweight.
+
+Use the Flyweight pattern only when your program must support a huge number of objects which barely fit into available RAM.
+The benefit of applying the pattern depends heavily on how and where it’s used. It’s most useful when:
+
+an application needs to spawn a huge number of similar objects
+this drains all available RAM on a target device
+the objects contain duplicate states which can be extracted and shared between multiple objects
+
+the intrinsic state: the fields that contain unchanging data duplicated across many objects
+the extrinsic state: the fields that contain contextual data unique to each object
+
+The Flyweight pattern suggests uyou segregate the intrinsic properties in a sperate class(FlyWeight) and have the extrinsic(unique) properties in a class called context.
+
+
+
+****************************************************************************************************************************************************************
+Proxy  Pattern
+****************************************************************************************************************************************************************
+"Proxy is a structural design pattern that lets you provide a substitute or placeholder for another object"
+ A proxy controls access to the original object, allowing you to perform something either before or after the request gets through to the original object.
+ 
+The proxy can do all its operation before and after forwarding the client request to the original service.
+Do some lazy intzation of the servie obect.
+
+Use Cases :
+==============
+Lazy Initilaiztion
+Access Control
+Logging before and after the services, caching, smart removal of unused object from its references
+
+Diff  :
+=========
+Similar to adaprter  : But adapter gives se diff interface for its service object
+Decoraot performs extra decorated actions. But the object management if decorator is done by cleint. Whereas the proxy takes care of the lifecycle management of its service object.
+Similar of facade by facade produces a diff class or interface to the client than the service object.Whereas the proxy implements the same interface as the service object.
+
+How to create proxy  : Let the proxy class implment the same interface as the service object so that both service and proxy would be interchangable.
+else extends the service class with the proxy so proxy would be used in place of service.
+
+
+
+
+****************************************************************************************************************************************************************
+Structural Design pattern 
+****************************************************************************************************************************************************************
+Behavioral design patterns are concerned with algorithms and the assignment of responsibilities between objects.
+
+****************************************************************************************************************************************************************
+Chain of Responsibility  :
+****************************************************************************************************************************************************************
+We will have object defined as Handlers to handle the user request.
+Each handler checks if it can process the request or not. After processing either it forwards to the next handler or stop proceeding further.
+
+Use this :
+When U want to handle a single request sequentially and do not want to proceed further when one of the checks fails.
+Imagine  : A web request passing thru sequqnce of checks. Usually this would make the code look so blotted.
+Also we would not be able to reuse the existing checks in other modules.
+
+So COR patten would help U solve this issue by segregating each checks in a seperate module.
+
+Use the Chain of Responsibility pattern when your program is expected to process different kinds of requests in various ways, but the exact types of requests and their sequences are unknown beforehand.
+
+Use the pattern when it’s essential to execute several handlers in a particular order.
+
+Use the CoR pattern when the set of handlers and their order are supposed to change at runtime.
+
+
+
+****************************************************************************************************************************************************************
+Command Pattern :
+****************************************************************************************************************************************************************
+an object is used to encapsulate all information needed to perform an action or trigger an event at a later time. Method calls are defined as objects
+This information includes the method name, the object that owns the method and values for the method parameters.
+Similar to higher order function in Scala. 
+Implementing (hard-wiring) a request directly into a class is inflexible because it couples the class to a particular request at compile-time, which makes it impossible to specify a request at run-time.
+
+Using the command design pattern can solve these problems:[2]
+Coupling the invoker of a request to a particular request should be avoided. That is, hard-wired requests should be avoided.
+It should be possible to configure an object (that invokes a request) with a request.
+
+Use this pattern whenever U want to parametrize an opeartions , so that operation can be passed or treated as value.
+
+Use the Command pattern when you want to queue operations, schedule their execution, or execute them remotely.
+
+Use the Command pattern when you want to implement reversible operations.
+
+Each commabd has execute and undo-execute method
+
+
+
+We have Invoker 
+Client ==> (Sender or Invoker - Remote) ==> Command(ON/OFF)  ==> Receiver(Light)
+
+
+
+****************************************************************************************************************************************************************
+Observer Pattern :
+****************************************************************************************************************************************************************
+Observer is a behavioral design pattern that lets you define a subscription mechanism to notify multiple objects about any events that happen to the object they’re observing.
+
+Use the Observer pattern when changes to the state of one object may require changing other objects, and the actual set of objects is unknown beforehand or changes dynamically.
+Use the pattern when some objects in your app must observe others, but only for a limited time or in specific cases.
+
+Subscribers are notified in random order.
+ 
+
+ 
+ 
+****************************************************************************************************************************************************************
+Memento Pattern :
+****************************************************************************************************************************************************************
 

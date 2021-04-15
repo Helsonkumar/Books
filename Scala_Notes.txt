@@ -11,7 +11,15 @@ Either
 
 Scala Notes:
 ==================
-Type Classes : helps u extend a type with new functionality without even changinh the type or its class definition.
+Type Classes : helps u extend a type with new functionality without even changing the type or its class definition. Also helps U use multiple implementation of the same type class.
+Mainly used for Type Enrichment along with implicits.
+
+Every Type class ,user need an implementation called Type Instance (Object which extends Type Class interface)
+Type Classes are Sets of Types like we have classes as Sets of Objects(String class has members like "Helson" , "Cat", "Another String", etc) like we have members like TypeClass[Int] , TypeClass[String] , etc as its members.
+
+** Type Classes are like Dictionaries of Method and Functions of a TYPE and not an instance or class. It simply syas what U can do with the instance of a given parametric type. 
+It is not like a simple definition of a class which actually defines what  a class can do. But typeclass says what U can do with instances of such class(Types).
+ 
 Helps u inject new functionality for the class without modifying the code for the type for which the fucntionality is defined.
 We need to get the compiler do all the static type checking . Not the type checking during runtime
 
