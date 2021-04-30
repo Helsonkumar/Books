@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "applied-pursuit-282708",
+  "private_key_id": "43fa2614e9c27d7fcfca50936b2eda206f9696cc",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCpcRJJQmMr/rr5\nbTlIerVP4N3J3zt/flLlOrC98hkK1QkKsSjkMZB+q0WfccBQBI3h8RXNdeFmU85X\n90XqIQNUDWCyIJitQRMJ09O5si9329YIm6mK2N1sFDvapWGs72wbhuhj7Fg/88F7\nkLaEOI/0ORpZkYdBP5ztA4uf86oML+uRJ+Zh0RKjPOCjszklqOOQIUuW5tyfrTIT\nr8TfIBES4kxSEnubErhbdUNuP+hn/OG45Hnp5y+2AfwP3QRHN75es6mhWQnLiC08\nLqR0OXl39bWoLQ6vYhLMMn1nwPfGJIhWarRkAG1KPU/+VSw6kZFA6C4fBH/oemw9\nbjdJanp5AgMBAAECggEAKD2y3pQ2MlImfKtcgeKmoehhNBrgqghJzqgQJqRTHzf2\nFER71ioRS4wIlnPw/O//9EuJ5oha9i7sIAcZYx/hBvrAXr2QFQGR8HEO5Ri03k3m\n+JdjfhbAC3WIu4Ywet5HugfhtC2Czflpl5uIRUGbqqBPKjt+OFhPwBhp9hxr48Ww\ne45GOLfdfrk9UOhbd0lbBQB8nrYftrKL7ulgd2XyTSvzurafF/lx83oG3TbSDWWf\neAYEz9S2fXfHRcEq/LfS3utDSOdaCB+Ej2KXUw5zJSORVczXJ+jjsqpzEOxdPw56\nKKjWteXD6/oucl5R0iPAHyO28L4Ii74UDmk3I+6eawKBgQDhZbG40MAV9YBiWkA8\n38ixk1Vmc+ae+KwYI03BBglmNRju3VlVcdb37FgkwkB5wvskqMQ6dwJKtiWR/Q2W\n2CdutOJIWV4X0n+JrrbLHxi2xfIMprpJfK+yPU0+BsTpk94OWp4mqECghaMdcN5c\nXcaYE4GB/BRoYnKqrLvuI+CPHwKBgQDAcnyavxw3oC33GdjB8FnJuEApaGXfT7ZP\nwaqVj86sMlkiyuUmWUB0+0gCgFFi+sU2l7AgblI93x4RznJJ2eUAwoMLZ7KG8JyZ\nZ+6bJDMnaUurJ30qfKtks7xjQNrtUZq+H8UpnMlu1ugrQdmHIah8ieGAndoSaXme\nV7mz6hN7ZwKBgF4mK2FGmSXTAYiTqEeFNoCuSTrdaNS4jLIcdQsOqXhu73Y/MWSW\ng7PVnk/kcCgsQNlkQWsmcOeiQ/lCGZ4LthTxK6AK7FnJDIsHVsVrvNgDwQJ11lSB\n56XtI0mobDIhGN0oDu2Y1D349FSE4+zzItQ9OZiBIkkj7j/KnUlw5QkDAoGAbsf4\nzqPAvIyqqRnp2wpexW4ZET0Vl40tZ5AWgG3+DMYW5Z5idsbeAfk8pKP1NcMhj6GW\nM7UOBqvPhXSP+c9CskNGaGRTMraDjxNzGT+nasKEWowq0zBdAWUtxvzoicB2EYf8\nWU317qYrk+seK1nGwZolg4JarEqnRe0960GN4XUCgYEAjButiuMbDni7UbUPQkUF\nWeaCyZIn1PkuC4z0f2lWFFRkjfUJ2QiYPvJQvSYgH9hZzh3fvq8/a5nR/Jiw5k3T\n6tm02uFfLjZhtsij7yblh2L3I+4KO22/+zw8TEGQEHDOU+SJJPEa15+eYta1vvl2\nNOjfg4Fo1Hv7QwmlsLL1ajI=\n-----END PRIVATE KEY-----\n",
+  "client_email": "helsondp@applied-pursuit-282708.iam.gserviceaccount.com",
+  "client_id": "115987717524867335469",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/helsondp%40applied-pursuit-282708.iam.gserviceaccount.com"
+}

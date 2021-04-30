@@ -6,10 +6,20 @@ Is predicate push down applicable in all cases.
 
 
 
+Cluster Manager  :
+--------------------
+Yarn Vs Spark Standalone cluster
+YARN allows you to dynamically share and centrally configure the same pool of cluster resources between all frameworks that run on YARN. 
+You can throw your entire cluster at a MapReduce job, then use some of it on an Impala query and the rest on Spark application, without any changes in configuration.
+We can even dynamically allocate or turn off the executors in the yarn dynamic mode
 
+Spark standalone mode requires each application to run an executor on every node in the cluster, whereas with YARN, you choose the number of executors to use.
+We will have to create Standalone Master and Stad.alone Worker services.
+We cannot run any other workload in this deployment mode
 
-
-
+Dataproc  :
+---------------
+gcloud dataproc jobs submit spark --cluster=helsondp --region=us-central1 --class=sql.CsvReader --jars=SparkOnGCP-1.0-SNAPSHOT.jar --properties=spark.executor.instances=3,spark.executor.cores=2
 
 
 
@@ -310,6 +320,21 @@ Off heap storage  : Off heap space can be used for storing cache. But usually he
 But the items in off heap storage still remains effective.
 Off heap is available since spark 2.0
 
+WholestageCode generation  
+============================
+Final phase of query optimization. 
+It’s a physical query optimization phase that
+collapses the whole query into a single function, getting rid of virtual function calls
+and employing CPU registers for intermediate data
+
+The second-generation Tungsten
+engine, introduced in Spark 2.0, uses this approach to generate compact RDD code
+for final execution. This streamlined strategy significantly improves CPU efficiency
+and performance.
+
+
+
+
 
 ****How to trouble Shoot OOM  :
 ---------------------------------------------
@@ -343,8 +368,209 @@ So we tried splitting this large array into smaller one.
 
 
 
+Spark Arch Shuffle  :
+=========================
+https://0x0fff.com/spark-architecture-shuffle/
+https://github.com/JerryLead/SparkInternals/blob/master/markdown/english/4-shuffleDetails.md
 
 
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+when shuffling is triggered on Spark?????? ;;; Imagine Map + Reduce like processing
+ Any join, cogroup, or ByKey operation involves holding objects in hashmaps or in-memory buffers to group or sort.
+ 
+ distinct creates a shuffle
+ 
+ reduceByKey and aggregateByKey
+
+**Shuffle is not triggered if both DF/RDD in join holds the same partitioner 
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+Mapper  (task that emits data ) -->. Shffle(happens between these two tasks) --> Reducer  (Consumes data)
+
+spark.shuffle.compress + spark.shuffle.compress.spill  ==> Uses snappy codec to compress
+
+ Each reducer should also maintain a network buffer to fetch map outputs. Size of this buffer is specified through the parameter spark.reducer.maxMbInFlight (by default, it is 48MB).
+ 
+Diff shuffle impl are there  : Spark.shuffle.manager  : Hash / sort(default) / tungsten-sort
+
+spark.shuffle.spill == true/false  : Decides if we need to spill the data to disk .
+ie. Output of mapper if not fitted into the memory allocated for reducer task then this config would take effect. Def  : true (it wold spill data to disk if it does not fit memory)
+
+The amount of memory that can be used for storing “map” outputs before spilling them to disk ==> JVM Heap Size” * spark.shuffle.memoryFraction * spark.shuffle.safetyFraction
+
+Spark internally uses AppendOnlyMap structure to store the “map” output data in memory. 
+
+Hash Shuffle :
+----------------
+This use to generate R number of files corr to R reducer by each M mapper tasks..so M * R files are dropped by mappers in spark.local.dir
+mapper output is not sorted.
+
+sorting in Spark on reduce side is done using TimSort, 
+
+ if you don’t have enough memory to store the whole “map” output? You might need to spill intermediate data to the disk. Parameter spark.shuffle.spill is responsible for enabling/disabling spilling, and by default spilling is enabled. 
+
+
+Avoid groupByKey and use reduceByKey or combineByKey instead.
+
+groupByKey shuffles all the data, which is slow.
+
+reduceByKey shuffles only the results of sub-aggregations in each partition of the data.
+
+
+Shuffle Process:
+======================
+Shuffle Comparison between Hadoop and Spark
+Both has Mapper and Reducers.
+Hadoop workflow: map(), spill, merge, shuffle, sort and reduce()
+
+mappers simply partitons their output for corresponding reducer.
+The reducer buffers this data in memory and aggregates the data.
+In hadoop the output from Mapper is expected to be sorted before aggregation and applying reduce() logic ontop of it. 
+But in spark we need to obviously mention it using sortByKey()(Uses external algorithm)
+else use spark.shuffle.manager=sort
+
+Shuffle Write  : At mapper (ShuffleMapTask)side , Process of partitioning the output for corresponding reducer is called Shuffle Write
+Shuffle Read   : At reducer (ResultTask)side  , processe of  reading and aggregating data
+
+
+Shuffle Write:
+------------------
+Each Mapper(ShuffleMaptask) would write a Shuffle Block File(File Segmenet).
+Each ShuffleBlockFile corresponds to a Reducer.
+For each SuffleBlockFile we have a ShuffleBuffer(Shuffle Bucket : Denotes the data for specific Reducer(whihc may corresponds to one or more than one Key)
+Each Core would have corresponding Buckets : ShuffleMaptask woudl be executed in sequqnce in a Core for a stage. 
+So C(cores) * R (Reducers) * M (Mapper task) ==> number of shuffleBlockFisles 
+These shuffleBlock file would be persisteed in the disk at the mapper side. Whihc would be read by reducer later.
+ But in later version of spark  : enabling spark.shuffle.consolidateFiles = true would allocated a shared file for each buckets(into whihc the shuffleblocks would be appended by the respective mapper tasks)
+ So we will have one file per reducer for each core (C * R * 32KB ==> This much memory would be utilized at each node for this buffer allocation)
+ The buffer size would be 32KB
+
+
+Shuffle Read:
+----------------------
+DataBlocks --> parallelCollRDD -> MapPartitionRDD --> ;;;;; --> shuffleRDD --> mapPartitionRDD --> Result
+
+The ShuffleBlocks are fetched after the completion of all ShuffleMapTask.
+
+Once they are processed... Spark utilizes data structures like HashMap to do the job. Each <Key, Value> pair from the shuffle process is inserted into a HashMap. 
+If the Key is already present, then the pair is aggregated by func(hashMap.get(Key), Value).
+
+The fetched FileSegments get buffered in softBuffer
+
+spark.shuffle.spill is false, then the write location is only memory.
+A special data structure, AppendOnlyMap, is used to hold these processed data in memory.
+
+MapR would expect the data to be sorted before aggregation. But in spark it not mandated. So spark is faster here
+Otherwise, the processed data will be written to memory and disk, using ExternalAppendOnlyMap
+
+How do the tasks of the next stage know the location of the fetched data? 
+ShuffleMapStage, which will register its final RDD by calling MapOutputTrackerMaster.registerShuffle(shuffleId, rdd.partitions.size).
+So during the shuffle process, reducers get the data location by querying MapOutputTrackerMaster in the driver process. 
+ShuffleMapTask finishes, it will report the location of its FileSegment to MapOutputTrackerMaster.
+
+
+Shuffle Read of Typical Transformations:
+---------------------------------------------
+Apply map side combine to reduce the network traffic.
+
+
+
+HashMap in Shuffle Read:
+----------------------------
+Hash map is a frequently used data structure in Spark's shuffle process
+Spark has 2 versions of specialized hash map: in memory AppendOnlyMap and memory-disk hybrid ExternalAppendOnlyMap.
+
+
+AppendOnlyMap or ExternalAppendOnkyMap  : spark.shuffle.spill == true/false
+-----------------------------------------------------------------------------------------------
+Hadoop allocates 70% of the memory space of a reducer for shuffle-sort.
+25% memory is allocated for shuffle in Spark
+Spark has spark.shuffle.memoryFraction * spark.shuffle.safetyFraction (defaults to 0.3 * 0.8) for ExternalAppendOnlyMap
+Each Reducer would hold these maps.
+An executor holds a ShuffleMemoryMap: HashMap[threadId, occupiedMemory] to monitor memory usage of all ExternalAppendOnlyMaps in each reducer. 
+
+
+spark.shuffle.spill == false 
+AppendOnlyMap : Would be used when the shuffleData + processed data are to be held only in memory.
+We have static allocated percentatge of ShuffleMemory : When that memory is reached then it would throw OOM
+
+ExtrenalAppendOnly  : spark.shuffle.spill == true
+If the appendonly map is full then check for available memory .
+If there's still enough space, the AppendOnlyMap doubles its size
+otherwise **ALL** its key-value pairs are sorted and then spilled onto local disk (by using destructiveSortedIterator()). 
+ In each spill, a spillMap file will be generated and a new, empty AppendOnlyMap will be instantiated to receive incoming key-value pairs.
+ when asked for the final result, a global merge-aggregate needs to be performed on all spilled maps and the in memory
+
+Global merge-aggregate runs as follows.
+
+Spill process. Like the shuffle write, Spark creates a buffer when spilling records to disk. Its size is spark.shuffle.file.buffer.kb defaulting to 32KB.
+Spark limits the records number that can be spilled at the same time to spark.shuffle.spill.batchSize, with a default value of 10000.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Optimizing and Tuning Spark Applications :
+================================================
+Performance optimization lessons from Spark+AI and Data+AI Summits
+
+Sizing partitions:
+---------------------
+**spark.sql.shuffle.partitions. : Configures the NUMBER(not size) of partitions to use when shuffling data for joins or aggregations.
+This defines the number of partitons of the resulting DF wheich is the outcome of any  or AGG or GRP_By operation.
+Def  : 200 
+This is an issue for  small sized data  : Since we will end up with more partitions.
+For large data : We will have to stick to 200 and we will not use the resources effectively
+How to dynamically set this  : sparkSession.conf.set("spark.sql.shuffle.partitions",100)
+The exact logic for coming up with number of shuffle partitions depends on actual analysis. You can typically set it to be 1.5 or 2 times of the initial partitions.
+
+** the NUMBER OF SHUFFLE PARTITIONS = INP DATA SIZE / TARGET SHUFFLE PARTITION SIZE
+
+Lets say inp : is 54GB and target 100MB : 54GB/100MB = 540 partitions
+But we need to check for the available cores and see how equally we can distribute the partitons across all cores.
+Lets say we have 96 cores : then 540 /96 = 5.625 partitions per core. so the first 5 partitions for every core would be processed in the first cycle.
+In the secodn cycle the remaining 0.625 partitons would be processed, this would lead to 35% of the cores to stay idle.
+So we need to chahnge that 540 to 480 so each core would get 5 partitions instead of 5.625...No need to second cycle here.
+
+Bad shuffle partitions size can increase spills to the disk and also under optimize resources 
+
+** spark.sql.files.maxPartitionBytes  : inp file's partition size. 
+def  : 128MB
+
+
+Dont shuffle multiple times in code...like df.repartition().grp_by()
+
+Unpersist the cached object when not needed.
+NOte  : Mem+ Disk level persist would not evict the LRU object from emory instead it would write data to disk if memory is full which is inefficient.
+
+use NOT EXISTS instead of NOT IN operator
+
+
+
+
+
+
+**spark.default.parallelism  : effective for RDD only and not for SQL DF. 
 
  
 
@@ -434,14 +660,14 @@ Dynamic partition pruning occurs when the optimizer is unable to identify at par
 
 This optimization occurs at the Logical Plan level.
 
-This is useful for running effective  SATR SCHEMA JOIN queries : Queries which involve the big fact tables and multiple Small dimensional tables.
+This is useful for running effective  STAR SCHEMA JOIN queries : Queries which involve the big fact tables and multiple Small dimensional tables.
 
 Lets say we join sales fact table with the date dim tale. And we have filter for Dim table alone .
-Since the Dim table is small in size here , spark would do the broadcast jon .ie
+Since the Dim table is small in size here , spark would do the broadcast join .ie
 The Filtered result from the Dim table is broadcasted to the nodes where the partiton for the fact table resides.
 This would help us avaoid shuffles.
 
-DPP uses this approache. 
+DPP uses this approaches. 
 The filtered applied on DIM tables is plugged into the scanner of the larger Fact tables, so only the fact partitions which are actually needed for joining would be scanned.
 This is what DPP all about. 
 We avoid scanning unnecessary scanning in Star-Schema join queries.
@@ -449,7 +675,7 @@ We avoid scanning unnecessary scanning in Star-Schema join queries.
 pre-requisite :
 -------------------------
 This would work only if there is a matching partition column between fact and dimension tables.
-The size of the dim table must be uynder 10MB configured level. To be considered as Broadcast Hash join.
+The size of the dim table must be under 10MB configured level. To be considered as Broadcast Hash join.
 DPP is not triggered for other type of joins.
 Because the dynamic filtering is a kind of subquery duplication. (subquery holds the filetered result of the dim table)
 So as long as the Dim table subquery duplicate execution is cheaper, it is ok.
@@ -650,8 +876,8 @@ Used to switch between multiple k8s cluster
 
 Namespaces :
 --------------
- Namespaces are ways to divide cluster resources between multiple users (via resource quota).
- Kubernetes allows using ResourceQuota to set limits on resources, number of objects, etc on individual namespaces. 
+Namespaces are ways to divide cluster resources between multiple users (via resource quota).
+Kubernetes allows using ResourceQuota to set limits on resources, number of objects, etc on individual namespaces. 
  
  
 
