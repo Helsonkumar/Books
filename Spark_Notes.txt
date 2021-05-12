@@ -366,6 +366,168 @@ Storing 2-D arrays wor any arry DS would need contiguos memory  : So even when w
 So we tried splitting this large array into smaller one.
 
 
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+This chapter aims to answer the following questions:
+
+Q1: After a successful deployment, what are the running services in each node?
+
+Q2: How is the Spark application created and executed?
+
+Each Worker manages one or multiple ExecutorBackend processes.
+Each ExecutorBackend launches and manages an Executor instance.
+
+In Standalone deployment mode, ExecutorBackend is instantiated as CoarseGrainedExecutorBackend.
+We will have one CoarseGrainedExecutorBackend for one node for one app
+Worker manages each CoarseGrainedExecutorBackend process thourgh an ExecutorRunner instance (Object).
+
+Job Logical Plan:
+--------------------
+Def partition of child RDD  : max(partiton of parent RDDs)
+
+In Spark, there are two kinds of data partition dependencies between RDDs:
+NarrowDependency  : One child partiton FULLY depends on a small number of parent partition  (FULLY means the entire data in the parent maps to one child partition)
+NarrowDependency essentially means each partition of the parent RDD is used by at most one partition of the child RDD
+A dependency is a NarrowDependency, if the RDDs' #partition and partitioner type are the same.
+
+Wide Dependency   : One child partiton depends on PARTIAL parent partition...
+
+
+
+OneToOneDependency occurs if the partitioner type and number of partitions of the parent RDDs and CoGroupedRDD are the same. 
+Otherwise, the dependency must be a ShuffleDependency. 
+
+How does Spark keep multiple partition dependencies for each partition in CoGroupedRDD?
+
+RDD_A.join(RDD_B) ==> CoGropuedRDD ==> MappedValuesRDD(Cartesian Product) ==> FlatMappedValuesRDD
+
+If all the parent RDDs and CoGrpd RDD are HashPartitioned with same number of partitions then it is called HashJoin()
+This would mean that there is One2One dependency betwen partitions
+
+In summary, data partition dependencies are listed as below
+
+NarrowDependency (black arrow)
+RangeDependency => only used for UnionRDD
+OneToOneDependency (1:1) => e.g., map(), filter()
+NarrowDependency (N:1) => e.g., co-partitioned join()
+NarrowDependency (N:N) => a rare case
+
+ShuffleDependency (red arrow)
+
+
+Job Physical Plan  :
+-------------------------
+In Narrow dependency   : No need to store any intermediate data. So the operations can be clubbed together. ==> g(f(record)
+                         NarrowDependency chain can always be pipelined.
+						 
+In Shuffle Dependency  : Need to store intermediate data. So we cannot club the operations. 
+
+Strategy for creating stages  :
+------------------------------------
+***Check backwards from the final RDD, add each NarrowDependency into the current stage
+break out for a new stage when there's a ShuffleDependency. 
+
+**In each stage, the task number is determined by the partition number of the last RDD in the stage.
+
+Since the stages are determined backwards, the last stage's id is 0
+
+ If a stage generates the final result, the tasks in this stage are of type ***ResultTask(reducer : if it gets data from parent stages else it is simply regarded as mapper)
+ otherwise they are **ShuffleMapTask (mapper since its result needs o be shuffled to the next stage)
+
+
+How Physical plan isexecuted  :
+===================================
+Recall in Haddop taska are executed in order
+
+Map() ==> Shuffle+Sort+Aggregate(K,List<Values>) ==> Reduce
+
+This execution process cannot be used directly on Spark's physical plan since Hadoop MapReduce's physical plan is simple and fixed, and without pipelining.
+
+The computation chain is deduced backwards from the final step, but the actual execution streams the records forwards. 
+One record goes through the whole computation chain before the computation of the next record starts.
+For stages with parent stages, we need to execute its parent stages and then fetch the data through shuffle
+
+
+Summary so far: The whole computation chain is created by checking backwards the data depency from the last RDD. 
+                Each ShuffleDependency separates stages. 
+				In each stage, each RDD's compute() method calls parentRDD.iterator() to receive the upstream record stream.(use RDD.getDependency() to get the parent RDDs)
+
+
+DAGScheduler.runJob() ==> THis is called when an action is called on a RDD.
+The tasks in a stage form a TaskSet. Finally taskScheduler.submitTasks(taskSet) is called to submit the whole task set.
+
+Actor based  : DriverActor  + ExecutorActor
+
+
+Coordination of system modules in job execution:
+=====================================================
+Master --> Driver --> Worker 
+Each worker has CoarsegrainedExecBackedn  (Process) inside which the executor objects are scheduled and run. each executor has one CGEB. There might be many as er the number of Executor in a worker node.
+
+Driver comprises of  (DAG scheduler  + taskScheduler  + SparkDeploySchedulerBackend(DriverActor : whihc receives task from taskschduler)) + mapoutputtasktracker(to handle result of shufflemaptask)
+Every reducer has a BasicBlockFetcherIterator, and one BasicBlockFetcherIterator could, in theory, hold 48MB of fetchResults. As soon as one FileSegment in fetchResults is read off, some FileSegments will be fetched to fill that 48MB.
+
+BlockManager is well designed, but it seems to manage too many things (data block, memory, disk and network communication)
+
+
+cache and checkpoint:
+==========================
+LinkedHashMap is waht used by Block Manager to hold the RDD partitions which are cached.
+RDD are cached in blockmanager memory store or else checkpointed in DiskStore.
+
+each partitons would have BlockID
+
+Whn a block  (partition) needs to be computed, the block manager would be checked to see if the  partiton is cached.If cached local blockmager.getLocal(blockId) is called else blockMgr.getremote(blockId) is called.
+Every blockmgr of the node would contact the blockManagerMasterActor  to indicate the location (blockMgrid) of the blocks being cached.
+Using this location information, then the block is fetched from  the appropriate location.
+
+Checkpoint:
+===============
+What kind of RDD needs checkpoint ?
+the computation takes a long time
+the computing chain is too long
+depends too many RDDs
+Actually, saving the output of ShuffleMapTask on local disk is also checkpoint, but it is just for data output of partition.
+
+Every time  an RDD needs to be cahced, the computed partition is immediately cached in memory.
+But for checkpointing, spark wiats till the job compltes, and then another job is launched to recompute the RDD again then checkpint in DIsk,
+Checkpointing and RDD persist only DISK_ONLY are both different.
+
+User should set the storage path for check point (on hdfs).
+RDDCheckpointData which manages checkpointed RDD
+
+the difference between cache and checkpoint ?
+Lineage information is maintained by the Blocks whihc are cached in memory or persisted in Disk(Local Disk) and they all are managed by block manager.
+So they are recomputed even when there is a node failure using the lineage information.
+But once the driver pgm finishes, then bloackMgr also would be killed and then all athe locally persisted data blocks would be lost.
+
+But in checkpointing the lineage information is trucntaed and the data blocks are persisted in HDFS which is naturally fault toloerant 
+and the bloks in HDFS remain intact even after the end of blockmanager.
+So that the checkpointed RDD can be used by the next driver program.
+
+ sc.setCheckpointDir("hdfs ://dev:/Users/xulijie/Documents/data/checkpoint")
+ 
+Summary  :
+============
+When Hadoop MapReduce executes a job, it keeps persisting data (writing to HDFS) at the end of every task and every job. 
+When executing a task, it keeps swapping between memory and disk, back and forth. 
+The problem of Hadoop is that task needs to be re-executed if any error occurs, 
+e.g. shuffle stopped by errors will have only half of the data persisted on disk, and then the persisted data will be recomputed for the next run of shuffle. But in spark we will recompute the data only for the failed task.
+Spark's advantage is that, when error occurs, the next run will read data from checkpoint, but the downside is that checkpoint needs to execute the job twice.
+
+
+
+
+
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+
+
+
+
 
 
 Spark Arch Shuffle  :
@@ -374,7 +536,7 @@ https://0x0fff.com/spark-architecture-shuffle/
 https://github.com/JerryLead/SparkInternals/blob/master/markdown/english/4-shuffleDetails.md
 
 
-$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 when shuffling is triggered on Spark?????? ;;; Imagine Map + Reduce like processing
  Any join, cogroup, or ByKey operation involves holding objects in hashmaps or in-memory buffers to group or sort.
  
