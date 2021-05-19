@@ -1,0 +1,79 @@
+Data Structures & Algorithms :
+=====================================
+
+Pick Data structures. : List  / Array / Set  / Tree  / Map (Primary)
+Heaps / Graphs / Tries / Doubly lInked List / 
+Check how to identify the problem for Dynamic Programming.
+
+127.20$ for year subs + 29.75$ for monthly
+
+Go thru the core implementation of them
+Get comfortable with the algo of those DS
+Practice them in both Java and Scala
+
+
+DS  : Types of DS in Java  : Understand the purpose of each Sub DS : Identify the most frequently used DS in them : Understand the implementation of each methods in the DS :  Practice with DS
+
+Play with Spark API every Day on data parsing.
+
+Get familiar on GCP services every weeks
+
+Once Spark is Done then play with SQL
+
+Play with system design every now and tehn watch videos abd blogs 
+
+
+
+Big(o) :
+=======================
+Time Complexity  : For given input what is the runtime taken. Ie ***time taken to complete the algorithm
+O(N) how the runtime grows linearly with the given input.
+O just describes the rate of increase.
+The amount of data elements which exists in the problem space(items used for algo execution even when there is huge amount of elemenstin memory) would also determine the time complexity.
+Identify the established relation ship between items like  : N and P ...P < N/2 so thats the relation ship and avoid the non-dominant term P
+Drop the non-dominant terms  : If P < X, then we know that N is the dominant term so we can drop the 0( P)
+Check if the execution cycle does some constant work for each element touch ..if yes, the O(N * 1) would be the 
+Check for what is the actual work does for each execution cycle ...like in summing the binary tree nodes....
+
+
+Simply described runtime for an alogorith m : O(1) / log N  , N log N , N , N^2 , 2^N : exponential
+Big 0, big omega, and big theta describe the upper, lower, and tight bounds for the runtime.
+
+Space Complexity : the amount of memory or space-required by an algorithm.
+***tells how many data elements exists in memory at a given time during run time.
+Stack space in recursive calls counts, too. THis would take memory space too.
+Imagine tail recursion takes o(1) space
+Dont think of parallelism here. Think that each recursive call in a stack executes solely.
+ 
+
+This is what amortized time does. It allows us to describe
+that, yes, this worst case happens every once in a while. But once it happens, it won't happen again for so
+long that the cost is "amortized:'
+
+When you see a problem where the number of elements in the
+problem space gets halved each time, that will likely be a 0( log N) runtime.: Think of Binary Search where we divide array of N size into halves and then search.
+
+When U have a recursive fucntion that makes multple calls like the one in binary tree, then  it would be O(2 ^ N)  : exponents
+
+Identify the runtime complexity for common operation like  : Sorting  + Binary searching ,etc
+
+Sorting  : O(N log N) coparison and each comparison would take O(S)  in case of string  : So totoal sorting time for a string array  ==> O(S  * N  log N)
+
+the runtime of a recursive function with multiple branches is typically O( branchesdepth).
+
+Depth + Branch : consider them for a binary search tree.
+
+2 ^ 4  = 16  => 4 = log 16
+for N totoal nodes in BST  : We have depth as roughly (log N)
+16 nodes and 4 depth 
+
+
+Tip  :
+============
+When U find multiple branches of recursive calls like we have in Fibnocci series  : fib(n-1) + fib(n-2) : then It would be of O(branch  ^ depth) runtime
+There would be O(log N) power of 2's in given N....10 50 25 12 6 3 1 : 2 ^ 7 = 128
+Sort(Merge Sort) would be  : O(N log N)
+
+
+
+

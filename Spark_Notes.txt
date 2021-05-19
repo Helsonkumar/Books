@@ -471,14 +471,21 @@ BlockManager is well designed, but it seems to manage too many things (data bloc
 
 cache and checkpoint:
 ==========================
+Every time when a partition is expected to be computed(dependent rdd.iterator() in rdd.compute() method) it would be checked if the partition is already checkpointed or not.........
+
+
 LinkedHashMap is waht used by Block Manager to hold the RDD partitions which are cached.
 RDD are cached in blockmanager memory store or else checkpointed in DiskStore.
 
 each partitons would have BlockID
 
-Whn a block  (partition) needs to be computed, the block manager would be checked to see if the  partiton is cached.If cached local blockmager.getLocal(blockId) is called else blockMgr.getremote(blockId) is called.
+Whn a block  (partition) needs to be computed, the block manager would be checked to see if the  partiton is cached/checkpointed.If cached local blockmager.getLocal(blockId) is called else blockMgr.getremote(blockId) is called.
 Every blockmgr of the node would contact the blockManagerMasterActor  to indicate the location (blockMgrid) of the blocks being cached.
 Using this location information, then the block is fetched from  the appropriate location.
+
+Note, that caching the data frame does not guarantee, that it will remain in memory until you call it next time. Depending on the memory usage the cache can be discarded.
+The cached partition can be evicted from emory and will be recomputed when needed.
+
 
 Checkpoint:
 ===============
@@ -486,6 +493,15 @@ What kind of RDD needs checkpoint ?
 the computation takes a long time
 the computing chain is too long
 depends too many RDDs
+
+Checkpointing simply saves the state of some intermediate stages in a JOB.
+
+
+ **************
+ Checkpoints are recommended to use when a) working in an unstable environment to allow fast recovery from failures
+ b) storing intermediate states of calculation when new entries of the RDD are dependent on the previous entries i.e. to avoid recalculating a long dependency chain in case of failure
+ **************
+ 
 Actually, saving the output of ShuffleMapTask on local disk is also checkpoint, but it is just for data output of partition.
 
 Every time  an RDD needs to be cahced, the computed partition is immediately cached in memory.
@@ -505,6 +521,18 @@ and the bloks in HDFS remain intact even after the end of blockmanager.
 So that the checkpointed RDD can be used by the next driver program.
 
  sc.setCheckpointDir("hdfs ://dev:/Users/xulijie/Documents/data/checkpoint")
+  
+  Very Importatnt  :
+  =======================
+  We check for a partiton being computed is already checkpointed or not. If yes, pick the check point
+ runJob() will call finalRDD.partitions() to determine how many tasks there will be.
+ rdd.partitions() checks if the RDD has been checkpointed via RDDCheckpointData which manages checkpointed RDD.
+ If yes, return the partitions of the RDD (Array[Partition]).
+ When rdd.iterator() is called to compute RDD's partition, computeOrReadCheckpoint(split: Partition) is also called to check if the RDD is checkpointed. 
+ If yes, the parent RDD's iterator(), a.k.a CheckpointRDD.iterator() will be called. 
+ 
+ CheckpointRDD reads files on file system to produce RDD partition. That's why a parent CheckpointRDD is added to checkpointed rdd trickly.
+ 
  
 Summary  :
 ============
